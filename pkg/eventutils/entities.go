@@ -112,6 +112,17 @@ func GetRawDataFromSerializedEvent(jsonData []byte) (eventType string, rawData j
 	return
 }
 
+func GetStreamName(entity IEntity) string {
+	return utils.GetType(entity) + entity.GetID().String()
+}
+
+func CommitEvents(entity IEntity) IEntity {
+	committedEvents := entity.GetCommittedEvents()
+	entity.setCommittedEvents(append(committedEvents, entity.GetLatestEvents()...))
+	entity.setLatestEvents(nil)
+	return entity
+}
+
 // Errors
 var (
 	ErrEntityNotEmpty = errors.New("entity is not empty")
