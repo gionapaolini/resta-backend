@@ -27,10 +27,15 @@ func NewMenu() Menu {
 		Name:            resources.DefaultMenuName("en"),
 	}
 
-	menu := Menu{
+	menu := EmptyMenu()
+
+	return eventutils.AddNewEvent(menu, event).(Menu)
+}
+
+func EmptyMenu() Menu {
+	return Menu{
 		Entity: &eventutils.Entity{},
 	}
-	return eventutils.AddNewEvent(menu, event).(Menu)
 }
 
 func (menu Menu) GetName() string {

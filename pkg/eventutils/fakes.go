@@ -19,15 +19,19 @@ func NewTestEntity() TestEntity {
 	var event IEvent
 	entityID := utils.GenerateNewUUID()
 
-	testEntity := TestEntity{
-		Entity: &Entity{},
-	}
+	testEntity := EmptyTestEntity()
 
 	event = TestEntityCreated{
 		EntityEventInfo: NewEntityEventInfo(entityID),
 		Name:            "TestEvent",
 	}
 	return AddNewEvent(testEntity, event).(TestEntity)
+}
+
+func EmptyTestEntity() TestEntity {
+	return TestEntity{
+		Entity: &Entity{},
+	}
 }
 
 func (testEntity TestEntity) ChangeName(name string) TestEntity {

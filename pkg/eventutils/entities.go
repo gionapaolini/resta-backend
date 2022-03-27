@@ -113,7 +113,11 @@ func GetRawDataFromSerializedEvent(jsonData []byte) (eventType string, rawData j
 }
 
 func GetStreamName(entity IEntity) string {
-	return utils.GetType(entity) + entity.GetID().String()
+	return utils.GetType(entity) + "_" + entity.GetID().String()
+}
+
+func GetStreamNameWithID(entity IEntity, id uuid.UUID) string {
+	return utils.GetType(entity) + "_" + id.String()
 }
 
 func CommitEvents(entity IEntity) IEntity {
