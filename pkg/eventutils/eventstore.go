@@ -10,7 +10,7 @@ import (
 )
 
 type IEventStore interface {
-	SaveEventsAsNewStream(streamName string, events []IEvent) (*esdb.WriteResult, error)
+	SaveEventsToNewStream(streamName string, events []IEvent) (*esdb.WriteResult, error)
 	SaveEventsToExistingStream(streamName string, events []IEvent) (*esdb.WriteResult, error)
 	GetAllEventsByStreamName(streamName string) ([]ReturnedEvent, error)
 }
