@@ -8,7 +8,6 @@ import (
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/benbjohnson/clock"
-	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -18,11 +17,7 @@ func main() {
 		panic(err)
 	}
 	entityRepository := eventutils.NewEntityRepository(eventStore)
-	api := internal.NewApi(entityRepository)
+	internal.NewApi(entityRepository)
 
-	r := mux.NewRouter()
-	r.HandleFunc("/menu", api.CreateNewMenu).Methods("POST")
-	r.HandleFunc("/menu/{id}", api.GetMenu)
-	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(":10000", nil))
 }

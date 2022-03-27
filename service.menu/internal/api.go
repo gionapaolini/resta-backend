@@ -13,12 +13,23 @@ import (
 
 type Api struct {
 	repository eventutils.IEntityRepository
+	router     *mux.Router
 }
 
 func NewApi(repo eventutils.IEntityRepository) Api {
-	return Api{
+	r := mux.NewRouter()
+	api := Api{
 		repository: repo,
+		router:     r,
 	}
+	setupRoutes(r, api)
+	http.Handle("/", r)
+	return api
+}
+
+func setupRoutes(r *mux.Router, api Api) {
+	r.HandleFunc("/menus", api.CreateNewMenu).Methods("POST")
+	r.HandleFunc("/menus/{id}", api.GetMenu)
 }
 
 func (api Api) CreateNewMenu(w http.ResponseWriter, r *http.Request) {
