@@ -22,6 +22,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/menu", api.CreateNewMenu).Methods("POST")
+	r.HandleFunc("/menu/{id}", api.GetMenu)
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(":10000", nil))
 }
