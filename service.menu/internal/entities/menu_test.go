@@ -23,3 +23,22 @@ func Test_CreateMenu(t *testing.T) {
 	require.Equal(t, menu.ID, menu.GetLatestEvents()[0].(eventutils.IEntityEvent).GetEntityID())
 	require.False(t, menu.IsDeleted)
 }
+
+func Test_DeserializeMenuEvent(t *testing.T) {
+	// Arrange
+	events := []eventutils.IEvent{
+		MenuCreated{
+			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
+		},
+	}
+
+	for _, event := range events {
+		serialized := utils.SerializeObject(event)
+
+		// Act
+		deserialized := EmptyMenu().DeserializeEvent(serialized)
+
+		// Assert
+		require.Equal(t, event, deserialized)
+	}
+}
