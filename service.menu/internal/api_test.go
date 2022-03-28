@@ -15,6 +15,7 @@ import (
 )
 
 func TestCreateNewMenu(t *testing.T) {
+	// Arrange
 	mockEntityRepository := new(eventutils.MockEntityRepository)
 	mockEntityRepository.
 		On("SaveEntity", mock.AnythingOfType("entities.Menu")).
@@ -27,11 +28,15 @@ func TestCreateNewMenu(t *testing.T) {
 	request, err := http.NewRequest(http.MethodPost, url, nil)
 	require.NoError(t, err)
 
+	// Act
 	api.Router.ServeHTTP(recorder, request)
+
+	// Assert
 	require.Equal(t, http.StatusCreated, recorder.Code)
 }
 
 func TestGetMenu(t *testing.T) {
+	// Arrange
 	menu := eventutils.CommitEvents(entities.NewMenu())
 	mockEntityRepository := new(eventutils.MockEntityRepository)
 	mockEntityRepository.
@@ -45,7 +50,10 @@ func TestGetMenu(t *testing.T) {
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	require.NoError(t, err)
 
+	// Act
 	api.Router.ServeHTTP(recorder, request)
+
+	// Assert
 	require.Equal(t, http.StatusOK, recorder.Code)
 
 	response, err := ioutil.ReadAll(recorder.Body)
