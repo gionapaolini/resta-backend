@@ -1,10 +1,14 @@
 package internal
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Resta-Inc/resta/menu/internal/entities"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -23,6 +27,33 @@ func TestCreateNewMenu(t *testing.T) {
 	request, err := http.NewRequest(http.MethodPost, url, nil)
 	require.NoError(t, err)
 
-	api.router.ServeHTTP(recorder, request)
+	api.Router.ServeHTTP(recorder, request)
 	require.Equal(t, http.StatusCreated, recorder.Code)
+}
+
+func TestGetMenu(t *testing.T) {
+	menu := eventutils.CommitEvents(entities.NewMenu())
+	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository.
+		On("GetEntity", entities.EmptyMenu(), menu.GetID()).
+		Return(menu, nil)
+
+	api := NewApi(mockEntityRepository)
+	recorder := httptest.NewRecorder()
+
+	url := fmt.Sprintf("/menus/%s", menu.GetID())
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	require.NoError(t, err)
+
+	api.Router.ServeHTTP(recorder, request)
+	require.Equal(t, http.StatusOK, recorder.Code)
+
+	response, err := ioutil.ReadAll(recorder.Body)
+	require.NoError(t, err)
+
+	var menuResponse MenuResponse
+
+	err = json.Unmarshal(response, &menuResponse)
+
+	require.Equal(t, MapToMenuResponse(menu.(entities.Menu)), menuResponse)
 }

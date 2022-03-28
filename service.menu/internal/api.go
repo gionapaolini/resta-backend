@@ -13,17 +13,16 @@ import (
 
 type Api struct {
 	repository eventutils.IEntityRepository
-	router     *mux.Router
+	Router     *mux.Router
 }
 
 func NewApi(repo eventutils.IEntityRepository) Api {
 	r := mux.NewRouter()
 	api := Api{
 		repository: repo,
-		router:     r,
+		Router:     r,
 	}
 	setupRoutes(r, api)
-	http.Handle("/", r)
 	return api
 }
 
