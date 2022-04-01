@@ -11,14 +11,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Api struct {
+type CommandsApi struct {
 	repository eventutils.IEntityRepository
 	Router     *mux.Router
 }
 
-func NewApi(repo eventutils.IEntityRepository) Api {
+func NewCommandsApi(repo eventutils.IEntityRepository) CommandsApi {
 	r := mux.NewRouter()
-	api := Api{
+	api := CommandsApi{
 		repository: repo,
 		Router:     r,
 	}
@@ -26,18 +26,18 @@ func NewApi(repo eventutils.IEntityRepository) Api {
 	return api
 }
 
-func setupRoutes(r *mux.Router, api Api) {
+func setupRoutes(r *mux.Router, api CommandsApi) {
 	r.HandleFunc("/menus", api.CreateNewMenu).Methods("POST")
 	r.HandleFunc("/menus/{id}", api.GetMenu)
 }
 
-func (api Api) CreateNewMenu(w http.ResponseWriter, r *http.Request) {
+func (api CommandsApi) CreateNewMenu(w http.ResponseWriter, r *http.Request) {
 	menu := entities.NewMenu()
 	api.repository.SaveEntity(menu)
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (api Api) GetMenu(w http.ResponseWriter, r *http.Request) {
+func (api CommandsApi) GetMenu(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := uuid.FromStringOrNil(vars["id"])
 	if id == uuid.Nil {

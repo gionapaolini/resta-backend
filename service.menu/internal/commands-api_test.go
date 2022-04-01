@@ -21,7 +21,7 @@ func TestCreateNewMenu(t *testing.T) {
 		On("SaveEntity", mock.AnythingOfType("entities.Menu")).
 		Return(nil)
 
-	api := NewApi(mockEntityRepository)
+	api := NewCommandsApi(mockEntityRepository)
 	recorder := httptest.NewRecorder()
 
 	url := "/menus"
@@ -43,7 +43,7 @@ func TestGetMenu(t *testing.T) {
 		On("GetEntity", entities.EmptyMenu(), menu.GetID()).
 		Return(menu, nil)
 
-	api := NewApi(mockEntityRepository)
+	api := NewCommandsApi(mockEntityRepository)
 	recorder := httptest.NewRecorder()
 
 	url := fmt.Sprintf("/menus/%s", menu.GetID())

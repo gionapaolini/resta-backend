@@ -20,7 +20,7 @@ func main() {
 
 	entityRepository := eventutils.NewEntityRepository(eventStore)
 
-	api := internal.NewApi(entityRepository)
+	api := internal.NewCommandsApi(entityRepository)
 
 	http.Handle("/", api.Router)
 	log.Fatal(http.ListenAndServe(":10000", nil))
