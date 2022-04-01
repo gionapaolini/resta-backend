@@ -13,6 +13,13 @@ type MenuView struct {
 	Name string    `json:"name"`
 }
 
+type IMenuRepository interface {
+	CreateMenu(menuID uuid.UUID, menuName string) error
+	GetMenu(menuID uuid.UUID) (MenuView, error)
+	GetAllMenus() ([]MenuView, error)
+	DeleteMenu(menuID uuid.UUID) error
+}
+
 type MenuRepository struct {
 	connectionString string
 }
