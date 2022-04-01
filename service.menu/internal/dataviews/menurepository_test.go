@@ -1,4 +1,4 @@
-package views
+package dataviews
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ func TestCreateMenu(t *testing.T) {
 	menuID := utils.GenerateNewUUID()
 	menuName := "TestMenu"
 
-	viewRepository := NewViewRepository(connectionString)
+	viewRepository := NewMenuRepository(connectionString)
 	defer viewRepository.DeleteMenu(menuID)
 
 	// Act
@@ -41,7 +41,7 @@ func TestGetAllMenus(t *testing.T) {
 	// Arrange
 	menuID1, menuID2, menuID3 := utils.GenerateNewUUID(), utils.GenerateNewUUID(), utils.GenerateNewUUID()
 	menuName := "TestMenu"
-	viewRepository := NewViewRepository(connectionString)
+	viewRepository := NewMenuRepository(connectionString)
 	defer viewRepository.DeleteMenu(menuID1)
 	defer viewRepository.DeleteMenu(menuID2)
 	defer viewRepository.DeleteMenu(menuID3)

@@ -1,4 +1,4 @@
-package views
+package dataviews
 
 import (
 	"database/sql"
@@ -13,17 +13,17 @@ type MenuView struct {
 	Name string    `json:"name"`
 }
 
-type ViewRepository struct {
+type MenuRepository struct {
 	connectionString string
 }
 
-func NewViewRepository(connectionString string) ViewRepository {
-	return ViewRepository{
+func NewMenuRepository(connectionString string) MenuRepository {
+	return MenuRepository{
 		connectionString: connectionString,
 	}
 }
 
-func (repo ViewRepository) CreateMenu(menuID uuid.UUID, menuName string) error {
+func (repo MenuRepository) CreateMenu(menuID uuid.UUID, menuName string) error {
 	db, err := sql.Open("postgres", repo.connectionString)
 	if err != nil {
 		return err
@@ -38,7 +38,7 @@ func (repo ViewRepository) CreateMenu(menuID uuid.UUID, menuName string) error {
 	return nil
 }
 
-func (repo ViewRepository) GetMenu(menuID uuid.UUID) (MenuView, error) {
+func (repo MenuRepository) GetMenu(menuID uuid.UUID) (MenuView, error) {
 	db, err := sql.Open("postgres", repo.connectionString)
 	if err != nil {
 		return MenuView{}, err
@@ -58,7 +58,7 @@ func (repo ViewRepository) GetMenu(menuID uuid.UUID) (MenuView, error) {
 	return menuView, nil
 }
 
-func (repo ViewRepository) GetAllMenus() ([]MenuView, error) {
+func (repo MenuRepository) GetAllMenus() ([]MenuView, error) {
 	db, err := sql.Open("postgres", repo.connectionString)
 	if err != nil {
 		return []MenuView{}, err
@@ -83,7 +83,7 @@ func (repo ViewRepository) GetAllMenus() ([]MenuView, error) {
 	return menuViews, nil
 }
 
-func (repo ViewRepository) DeleteMenu(menuID uuid.UUID) error {
+func (repo MenuRepository) DeleteMenu(menuID uuid.UUID) error {
 	db, err := sql.Open("postgres", repo.connectionString)
 	if err != nil {
 		return err
