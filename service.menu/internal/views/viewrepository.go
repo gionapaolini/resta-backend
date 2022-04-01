@@ -73,15 +73,10 @@ func (repo ViewRepository) GetAllMenus() ([]MenuView, error) {
 
 	for rows.Next() {
 		var menuView MenuView
-
-		// unmarshal the row object to user
 		err = rows.Scan(&menuView.ID, &menuView.Name)
-
 		if err != nil {
 			log.Fatalf("Unable to scan the row. %v", err)
 		}
-
-		// append the user in the users slice
 		menuViews = append(menuViews, menuView)
 	}
 
