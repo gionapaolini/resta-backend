@@ -8,6 +8,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type MenuView struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
 type ViewRepository struct {
 	connectionString string
 }
@@ -96,9 +101,4 @@ func (repo ViewRepository) DeleteMenu(menuID uuid.UUID) error {
 		return err
 	}
 	return nil
-}
-
-type MenuView struct {
-	ID   uuid.UUID `json:"id"`
-	Name string    `json:"name"`
 }
