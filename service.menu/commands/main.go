@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Resta-Inc/resta/menu.commands/internal"
+	"github.com/Resta-Inc/resta/menu/commands/internal"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/benbjohnson/clock"

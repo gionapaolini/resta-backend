@@ -3,7 +3,7 @@ package internal
 import (
 	"net/http"
 
-	"github.com/Resta-Inc/resta/menu.commands/internal/entities"
+	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/gorilla/mux"
 )

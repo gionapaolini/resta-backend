@@ -1,8 +1,8 @@
-module github.com/Resta-Inc/resta/menu.queries
+module github.com/Resta-Inc/resta/menu/queries
 
 go 1.18
 
-replace github.com/Resta-Inc/resta v0.0.0 => ../
+replace github.com/Resta-Inc/resta v0.0.0 => ../../
 
 require (
 	github.com/Resta-Inc/resta v0.0.0
