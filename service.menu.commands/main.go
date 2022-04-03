@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Resta-Inc/resta/menu/internal"
+	"github.com/Resta-Inc/resta/menu.commands/internal"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/benbjohnson/clock"
@@ -22,7 +22,7 @@ func main() {
 	entityRepository := eventutils.NewEntityRepository(eventStore)
 
 	router := mux.NewRouter()
-	internal.SetupCommandsApi(router, entityRepository)
+	internal.SetupApi(router, entityRepository)
 
 	http.Handle("/", router)
 	log.Fatal(http.ListenAndServe(":10000", nil))

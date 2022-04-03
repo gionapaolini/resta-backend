@@ -1,4 +1,4 @@
-module github.com/Resta-Inc/resta/menu
+module github.com/Resta-Inc/resta/menu.commands
 
 go 1.18
 

@@ -1,4 +1,4 @@
-package dataviews
+package internal
 
 import (
 	"fmt"

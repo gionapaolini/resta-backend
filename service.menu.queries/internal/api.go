@@ -4,28 +4,27 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/Resta-Inc/resta/menu/internal/dataviews"
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
 )
 
-type QueryApi struct {
-	menuRepository dataviews.IMenuRepository
+type Api struct {
+	menuRepository IMenuRepository
 	Router         *mux.Router
 }
 
-func SetupQueryApi(router *mux.Router, repo dataviews.IMenuRepository) {
-	api := QueryApi{
+func SetupApi(router *mux.Router, repo IMenuRepository) {
+	api := Api{
 		menuRepository: repo,
 	}
 	api.setupRoutes(router)
 }
 
-func (api QueryApi) setupRoutes(r *mux.Router) {
+func (api Api) setupRoutes(r *mux.Router) {
 	r.HandleFunc("/menus/{id}", api.GetMenu)
 }
 
-func (api QueryApi) GetMenu(w http.ResponseWriter, r *http.Request) {
+func (api Api) GetMenu(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := uuid.FromStringOrNil(vars["id"])
 	if id == uuid.Nil {

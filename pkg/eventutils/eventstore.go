@@ -9,6 +9,15 @@ import (
 	"github.com/Resta-Inc/resta/pkg/utils"
 )
 
+func NewEsdbClient(connectionString string) (*esdb.Client, error) {
+	settings, err := esdb.ParseConnectionString(connectionString)
+	if err != nil {
+		return nil, err
+	}
+	db, err := esdb.NewClient(settings)
+	return db, err
+}
+
 type IEventStore interface {
 	SaveEventsToNewStream(streamName string, events []IEvent) (*esdb.WriteResult, error)
 	SaveEventsToExistingStream(streamName string, events []IEvent) (*esdb.WriteResult, error)
@@ -20,7 +29,7 @@ type EventStore struct {
 }
 
 func NewEventStore(connectionString string) (*EventStore, error) {
-	client, err := newEsdbClient(connectionString)
+	client, err := NewEsdbClient(connectionString)
 	if err != nil {
 		return nil, err
 	}
@@ -46,21 +55,6 @@ func (eventStore EventStore) SaveEventsToExistingStream(streamName string, event
 	}
 	writeResult, err := eventStore.db.AppendToStream(context.Background(), streamName, options, batch...)
 	return writeResult, err
-}
-
-func prepareEventsBatch(events []IEvent) []esdb.EventData {
-	batch := []esdb.EventData{}
-	for _, event := range events {
-		finalJson := utils.SerializeObject(event)
-		eventData := esdb.EventData{
-			EventID:     event.GetEventID(),
-			ContentType: esdb.JsonContentType,
-			EventType:   utils.GetType(event),
-			Data:        finalJson,
-		}
-		batch = append(batch, eventData)
-	}
-	return batch
 }
 
 func (eventStore EventStore) GetAllEventsByStreamName(streamName string) ([]ReturnedEvent, error) {
@@ -91,13 +85,19 @@ func (eventStore EventStore) GetAllEventsByStreamName(streamName string) ([]Retu
 	return events, nil
 }
 
-func newEsdbClient(connectionString string) (*esdb.Client, error) {
-	settings, err := esdb.ParseConnectionString(connectionString)
-	if err != nil {
-		return nil, err
+func prepareEventsBatch(events []IEvent) []esdb.EventData {
+	batch := []esdb.EventData{}
+	for _, event := range events {
+		finalJson := utils.SerializeObject(event)
+		eventData := esdb.EventData{
+			EventID:     event.GetEventID(),
+			ContentType: esdb.JsonContentType,
+			EventType:   utils.GetType(event),
+			Data:        finalJson,
+		}
+		batch = append(batch, eventData)
 	}
-	db, err := esdb.NewClient(settings)
-	return db, err
+	return batch
 }
 
 // Errors

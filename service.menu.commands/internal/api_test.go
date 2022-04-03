@@ -18,7 +18,7 @@ func TestCreateNewMenu(t *testing.T) {
 		On("SaveEntity", mock.AnythingOfType("entities.Menu")).
 		Return(nil)
 	router := mux.NewRouter()
-	SetupCommandsApi(router, mockEntityRepository)
+	SetupApi(router, mockEntityRepository)
 	recorder := httptest.NewRecorder()
 
 	url := "/menus"

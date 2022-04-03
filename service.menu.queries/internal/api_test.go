@@ -8,7 +8,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Resta-Inc/resta/menu/internal/dataviews"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/require"
@@ -16,17 +15,17 @@ import (
 
 func TestGetMenu(t *testing.T) {
 	// Arrange
-	menu := dataviews.MenuView{
+	menu := MenuView{
 		ID:   utils.GenerateNewUUID(),
 		Name: "TestName",
 	}
-	mockMenuRepository := new(dataviews.MockMenuRepository)
+	mockMenuRepository := new(MockMenuRepository)
 	mockMenuRepository.
 		On("GetMenu", menu.ID).
 		Return(menu, nil)
 
 	router := mux.NewRouter()
-	SetupQueryApi(router, mockMenuRepository)
+	SetupApi(router, mockMenuRepository)
 	recorder := httptest.NewRecorder()
 
 	url := fmt.Sprintf("/menus/%s", menu.ID)
@@ -42,7 +41,7 @@ func TestGetMenu(t *testing.T) {
 	response, err := ioutil.ReadAll(recorder.Body)
 	require.NoError(t, err)
 
-	var menuResponse dataviews.MenuView
+	var menuResponse MenuView
 	err = json.Unmarshal(response, &menuResponse)
 
 	require.Equal(t, menu, menuResponse)
