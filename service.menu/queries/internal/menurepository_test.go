@@ -16,14 +16,14 @@ const (
 	dbname   = "postgres"
 )
 
-var connectionString string = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+var pgConnectionString string = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
 func TestCreateMenu(t *testing.T) {
 	// Arrange
 	menuID := utils.GenerateNewUUID()
 	menuName := "TestMenu"
 
-	viewRepository := NewMenuRepository(connectionString)
+	viewRepository := NewMenuRepository(pgConnectionString)
 	defer viewRepository.DeleteMenu(menuID)
 
 	// Act
@@ -41,7 +41,7 @@ func TestGetAllMenus(t *testing.T) {
 	// Arrange
 	menuID1, menuID2, menuID3 := utils.GenerateNewUUID(), utils.GenerateNewUUID(), utils.GenerateNewUUID()
 	menuName := "TestMenu"
-	viewRepository := NewMenuRepository(connectionString)
+	viewRepository := NewMenuRepository(pgConnectionString)
 	defer viewRepository.DeleteMenu(menuID1)
 	defer viewRepository.DeleteMenu(menuID2)
 	defer viewRepository.DeleteMenu(menuID3)

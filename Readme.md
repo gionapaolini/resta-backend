@@ -16,5 +16,5 @@ migrate create -ext sql -dir {migrationDIR} -seq {migrationName}
 
 Run migrations for views:
 ```
-migrate -database postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable -path internal/views/migrations up
+migrate -database postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable -path internal/migrations up
 ```
