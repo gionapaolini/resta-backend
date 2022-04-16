@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const connectionString = "esdb://127.0.0.1:2113?tls=false&keepAliveTimeout=10000&keepAliveInterval=10000"
+const eventStoreConnectionString = "esdb://127.0.0.1:2113?tls=false&keepAliveTimeout=10000&keepAliveInterval=10000"
 
 type TestEvent struct {
 	EventInfo
@@ -19,7 +19,7 @@ type TestEvent struct {
 
 func TestSaveEventsAsNewStream(t *testing.T) {
 	// Arrange
-	eventStore, err := NewEventStore(connectionString)
+	eventStore, err := NewEventStore(eventStoreConnectionString)
 
 	require.NoError(t, err)
 
@@ -40,7 +40,7 @@ func TestSaveEventsAsNewStream(t *testing.T) {
 
 func TestSaveEventsToExistentStream(t *testing.T) {
 	// Arrange
-	eventStore, _ := NewEventStore(connectionString)
+	eventStore, _ := NewEventStore(eventStoreConnectionString)
 	events := getRandomEvents(5)
 	newEvents := getRandomEvents(5)
 
