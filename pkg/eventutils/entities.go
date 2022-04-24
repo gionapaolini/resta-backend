@@ -91,18 +91,14 @@ func ReconstructFromEvents(entity IEntity, events []IEvent) (IEntity, error) {
 
 func AddNewEvent(entity IEntity, event IEvent) IEntity {
 	entity.setLatestEvents(append(entity.GetLatestEvents(), event))
-	entity = ApplyEvent(entity, event.(IEntityEvent))
+	entity = event.(IEntityEvent).Apply(entity)
 	return entity
 }
 
 func AddEvent(entity IEntity, event IEvent) IEntity {
 	entity.setCommittedEvents(append(entity.GetCommittedEvents(), event))
-	entity = ApplyEvent(entity, event.(IEntityEvent))
+	entity = event.(IEntityEvent).Apply(entity)
 	return entity
-}
-
-func ApplyEvent(entity IEntity, event IEntityEvent) IEntity {
-	return event.Apply(entity)
 }
 
 func GetRawDataFromSerializedEvent(jsonData []byte) (eventType string, rawData json.RawMessage) {
