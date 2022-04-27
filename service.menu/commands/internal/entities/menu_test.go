@@ -50,6 +50,19 @@ func Test_DisableMenu(t *testing.T) {
 	require.IsType(t, events.MenuDisabled{}, menu.GetLatestEvents()[2])
 }
 
+func Test_ChangeMenuName(t *testing.T) {
+	// Arrange
+	menu := NewMenu()
+	newName := "NewMenuName"
+
+	// Act
+	menu = menu.ChangeName(newName)
+
+	// Assert
+	require.Equal(t, newName, menu.GetName())
+	require.IsType(t, events.MenuNameChanged{}, menu.GetLatestEvents()[1])
+}
+
 func Test_DeserializeMenuEvent(t *testing.T) {
 	// Arrange
 	events := []eventutils.IEvent{

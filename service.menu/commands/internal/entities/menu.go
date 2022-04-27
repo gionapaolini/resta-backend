@@ -63,6 +63,15 @@ func (menu Menu) Disable() Menu {
 	return menu
 }
 
+func (menu Menu) ChangeName(newName string) Menu {
+	event := events.MenuNameChanged{
+		EntityEventInfo: eventutils.NewEntityEventInfo(menu.GetID()),
+		NewName:         newName,
+	}
+	menu = eventutils.AddNewEvent(menu, event).(Menu)
+	return menu
+}
+
 // Events
 func (menu Menu) ApplyEvent(event eventutils.IEntityEvent) eventutils.IEntity {
 	eventType := utils.GetType(event)
@@ -73,6 +82,8 @@ func (menu Menu) ApplyEvent(event eventutils.IEntityEvent) eventutils.IEntity {
 		menu = menu.applyMenuEnabled(event.(events.MenuEnabled))
 	case "MenuDisabled":
 		menu = menu.applyMenuDisabled(event.(events.MenuDisabled))
+	case "MenuNameChanged":
+		menu = menu.applyMenuNameChanged(event.(events.MenuNameChanged))
 	}
 	return menu
 }
@@ -90,6 +101,11 @@ func (menu Menu) applyMenuEnabled(event events.MenuEnabled) Menu {
 
 func (menu Menu) applyMenuDisabled(event events.MenuDisabled) Menu {
 	menu.State.IsEnabled = false
+	return menu
+}
+
+func (menu Menu) applyMenuNameChanged(event events.MenuNameChanged) Menu {
+	menu.State.Name = event.NewName
 	return menu
 }
 
