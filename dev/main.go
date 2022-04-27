@@ -87,6 +87,7 @@ func CreateMenuQueriesPersistentSubscription() {
 					"MenuCreated",
 					"MenuEnabled",
 					"MenuDisabled",
+					"MenuNameChanged",
 				},
 			},
 		},
