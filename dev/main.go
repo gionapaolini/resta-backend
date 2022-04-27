@@ -85,6 +85,8 @@ func CreateMenuQueriesPersistentSubscription() {
 				Type: esdb.EventFilterType,
 				Prefixes: []string{
 					"MenuCreated",
+					"MenuEnabled",
+					"MenuDisabled",
 				},
 			},
 		},

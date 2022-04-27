@@ -33,6 +33,8 @@ func main() {
 	menuRepository := internal.NewMenuRepository(pgConnectionString)
 	menuEventHandler := internal.NewMenuEventHandler(menuRepository)
 	eventHandler.HandleEvent("MenuCreated", menuEventHandler.HandleMenuCreated)
+	eventHandler.HandleEvent("MenuEnabled", menuEventHandler.HandleMenuEnabled)
+	eventHandler.HandleEvent("MenuDisabled", menuEventHandler.HandleMenuDisabled)
 	eventHandler.Start()
 	router := mux.NewRouter()
 	internal.SetupApi(router, menuRepository)
