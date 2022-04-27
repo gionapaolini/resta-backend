@@ -21,6 +21,7 @@ type IMenuRepository interface {
 	DeleteMenu(menuID uuid.UUID) error
 	EnableMenu(menuID uuid.UUID) error
 	DisableMenu(menuID uuid.UUID) error
+	ChangeMenuName(menuID uuid.UUID, newName string) error
 }
 
 type MenuRepository struct {

@@ -50,3 +50,14 @@ func (menuEventHandler MenuEventHandler) HandleMenuDisabled(rawEvent *esdb.Subsc
 	err = menuEventHandler.menuRepository.DisableMenu(event.GetEntityID())
 	return err
 }
+
+func (menuEventHandler MenuEventHandler) HandleMenuNameChanged(rawEvent *esdb.SubscriptionEvent) error {
+	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
+	var event events.MenuNameChanged
+	err := json.Unmarshal(rawData, &event)
+	if err != nil {
+		panic(err)
+	}
+	err = menuEventHandler.menuRepository.ChangeMenuName(event.GetEntityID(), event.NewName)
+	return err
+}
