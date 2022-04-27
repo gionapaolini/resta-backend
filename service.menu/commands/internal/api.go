@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
@@ -24,6 +26,7 @@ func (api Api) setupRoutes(r *mux.Router) {
 	r.HandleFunc("/menus", api.CreateNewMenu).Methods("POST")
 	r.HandleFunc("/menus/{id}/enable", api.EnableMenu).Methods("POST")
 	r.HandleFunc("/menus/{id}/disable", api.DisableMenu).Methods("POST")
+	r.HandleFunc("/menus/{id}/change-name", api.ChangeMenuName).Methods("POST")
 }
 
 func (api Api) CreateNewMenu(w http.ResponseWriter, r *http.Request) {
@@ -74,6 +77,38 @@ func (api Api) DisableMenu(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	menu = menu.(entities.Menu).Disable()
+	err = api.repository.SaveEntity(menu)
+	if err != nil {
+		//FIX IT with not found as well
+		http.Error(w, "something wrong", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (api Api) ChangeMenuName(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := uuid.FromStringOrNil(vars["id"])
+	if id == uuid.Nil {
+		http.Error(w, "invalid menu id", http.StatusBadRequest)
+		return
+	}
+
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	var body map[string]string
+	err := json.Unmarshal(reqBody, &body)
+	if err != nil || body["newName"] == "" {
+		//FIX IT with not found as well
+		http.Error(w, "something wrong", http.StatusInternalServerError)
+		return
+	}
+	menu, err := api.repository.GetEntity(entities.EmptyMenu(), id)
+	if err != nil {
+		//FIX IT with not found as well
+		http.Error(w, "something wrong", http.StatusInternalServerError)
+		return
+	}
+	menu = menu.(entities.Menu).ChangeName(body["newName"])
 	err = api.repository.SaveEntity(menu)
 	if err != nil {
 		//FIX IT with not found as well

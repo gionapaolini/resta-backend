@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
@@ -86,6 +87,37 @@ func TestDisableMenu(t *testing.T) {
 
 	url := fmt.Sprintf("/menus/%s/disable", menu.ID)
 	request, err := http.NewRequest(http.MethodPost, url, nil)
+	require.NoError(t, err)
+
+	// Act
+	router.ServeHTTP(recorder, request)
+
+	// Assert
+	require.Equal(t, http.StatusOK, recorder.Code)
+	mockEntityRepository.AssertExpectations(t)
+}
+
+func TestChangeMenuName(t *testing.T) {
+	// Arrange
+	menu := entities.NewMenu()
+	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository.
+		On("GetEntity", entities.EmptyMenu(), menu.ID).
+		Return(menu, nil)
+
+	mockEntityRepository.
+		On("SaveEntity", mock.MatchedBy(
+			func(menu entities.Menu) bool {
+				return menu.GetName() == "NewMenuName"
+			},
+		)).
+		Return(nil)
+	router := mux.NewRouter()
+	SetupApi(router, mockEntityRepository)
+	recorder := httptest.NewRecorder()
+	jsonBody := `{"newName": "NewMenuName"}`
+	url := fmt.Sprintf("/menus/%s/change-name", menu.ID)
+	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(jsonBody))
 	require.NoError(t, err)
 
 	// Act
