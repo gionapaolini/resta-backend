@@ -9,8 +9,9 @@ import (
 )
 
 type MenuView struct {
-	ID   uuid.UUID `json:"id"`
-	Name string    `json:"name"`
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	IsEnabled bool      `json:"isEnabled"`
 }
 
 type IMenuRepository interface {
@@ -18,6 +19,7 @@ type IMenuRepository interface {
 	GetMenu(menuID uuid.UUID) (MenuView, error)
 	GetAllMenus() ([]MenuView, error)
 	DeleteMenu(menuID uuid.UUID) error
+	EnableMenu(menuID uuid.UUID) error
 }
 
 type MenuRepository struct {
@@ -57,7 +59,11 @@ func (repo MenuRepository) GetMenu(menuID uuid.UUID) (MenuView, error) {
 	query := `SELECT * FROM menus WHERE id=$1`
 	row := db.QueryRow(query, menuID)
 
-	err = row.Scan(&menuView.ID, &menuView.Name)
+	err = row.Scan(
+		&menuView.ID,
+		&menuView.Name,
+		&menuView.IsEnabled,
+	)
 
 	if err != nil {
 		return MenuView{}, err
@@ -80,7 +86,11 @@ func (repo MenuRepository) GetAllMenus() ([]MenuView, error) {
 
 	for rows.Next() {
 		var menuView MenuView
-		err = rows.Scan(&menuView.ID, &menuView.Name)
+		err = rows.Scan(
+			&menuView.ID,
+			&menuView.Name,
+			&menuView.IsEnabled,
+		)
 		if err != nil {
 			log.Fatalf("Unable to scan the row. %v", err)
 		}
@@ -98,6 +108,21 @@ func (repo MenuRepository) DeleteMenu(menuID uuid.UUID) error {
 	defer db.Close()
 
 	query := `DELETE FROM menus WHERE id=$1`
+	_, err = db.Exec(query, menuID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo MenuRepository) EnableMenu(menuID uuid.UUID) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `UPDATE menus SET isEnabled=TRUE WHERE id=$1`
 	_, err = db.Exec(query, menuID)
 	if err != nil {
 		return err

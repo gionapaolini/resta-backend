@@ -30,3 +30,8 @@ func (m MockMenuRepository) DeleteMenu(menuID uuid.UUID) error {
 	args := m.Called(menuID)
 	return args.Error(0)
 }
+
+func (m MockMenuRepository) EnableMenu(menuID uuid.UUID) error {
+	args := m.Called(menuID)
+	return args.Error(0)
+}
