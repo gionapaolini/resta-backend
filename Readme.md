@@ -4,5 +4,5 @@ To start the development environment:
 
 ```
 cd dev
-sudo docker-compose up -d 
+sudo docker-compose up --build -d 
 ```

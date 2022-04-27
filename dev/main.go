@@ -22,7 +22,8 @@ const migrationsPath = "file:///src/service.menu/queries/internal/migrations"
 // const migrationsPath = "file://../service.menu/queries/internal/migrations"
 
 func main() {
-	CreatePersistentSubscription()
+	CreateIntegrationTestGroupPersistentSubscription()
+	CreateMenuQueriesPersistentSubscription()
 	RunPostgresMigrations()
 }
 
@@ -43,7 +44,7 @@ func RunPostgresMigrations() {
 	panic(err)
 }
 
-func CreatePersistentSubscription() {
+func CreateIntegrationTestGroupPersistentSubscription() {
 	settings, _ := esdb.ParseConnectionString(eventStoreConnectionString)
 	db, _ := esdb.NewClient(settings)
 
@@ -55,6 +56,35 @@ func CreatePersistentSubscription() {
 				Type: esdb.EventFilterType,
 				Prefixes: []string{
 					"testEvent1",
+				},
+			},
+		},
+	)
+	if err != nil {
+		var badInputErr *esdb.PersistentSubscriptionError
+		if errors.As(err, &badInputErr) {
+			if badInputErr.Code == 6 {
+				return
+			}
+			panic(badInputErr)
+		}
+		panic(err)
+	}
+
+}
+
+func CreateMenuQueriesPersistentSubscription() {
+	settings, _ := esdb.ParseConnectionString(eventStoreConnectionString)
+	db, _ := esdb.NewClient(settings)
+
+	err := db.CreatePersistentSubscriptionAll(
+		context.Background(),
+		"menu.queries",
+		esdb.PersistentAllSubscriptionOptions{
+			Filter: &esdb.SubscriptionFilter{
+				Type: esdb.EventFilterType,
+				Prefixes: []string{
+					"MenuCreated",
 				},
 			},
 		},
