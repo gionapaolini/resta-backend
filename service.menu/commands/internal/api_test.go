@@ -64,3 +64,34 @@ func TestEnableMenu(t *testing.T) {
 	require.Equal(t, http.StatusOK, recorder.Code)
 	mockEntityRepository.AssertExpectations(t)
 }
+
+func TestDisableMenu(t *testing.T) {
+	// Arrange
+	menu := entities.NewMenu().Enable()
+	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository.
+		On("GetEntity", entities.EmptyMenu(), menu.ID).
+		Return(menu, nil)
+
+	mockEntityRepository.
+		On("SaveEntity", mock.MatchedBy(
+			func(menu entities.Menu) bool {
+				return !menu.IsEnabled()
+			},
+		)).
+		Return(nil)
+	router := mux.NewRouter()
+	SetupApi(router, mockEntityRepository)
+	recorder := httptest.NewRecorder()
+
+	url := fmt.Sprintf("/menus/%s/disable", menu.ID)
+	request, err := http.NewRequest(http.MethodPost, url, nil)
+	require.NoError(t, err)
+
+	// Act
+	router.ServeHTTP(recorder, request)
+
+	// Assert
+	require.Equal(t, http.StatusOK, recorder.Code)
+	mockEntityRepository.AssertExpectations(t)
+}

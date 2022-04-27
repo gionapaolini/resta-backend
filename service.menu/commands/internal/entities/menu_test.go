@@ -56,6 +56,12 @@ func Test_DeserializeMenuEvent(t *testing.T) {
 		events.MenuCreated{
 			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
 		},
+		events.MenuEnabled{
+			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
+		},
+		events.MenuDisabled{
+			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
+		},
 	}
 
 	for _, event := range events {

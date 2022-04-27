@@ -23,6 +23,7 @@ func SetupApi(router *mux.Router, repo eventutils.IEntityRepository) {
 func (api Api) setupRoutes(r *mux.Router) {
 	r.HandleFunc("/menus", api.CreateNewMenu).Methods("POST")
 	r.HandleFunc("/menus/{id}/enable", api.EnableMenu).Methods("POST")
+	r.HandleFunc("/menus/{id}/disable", api.DisableMenu).Methods("POST")
 }
 
 func (api Api) CreateNewMenu(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +51,30 @@ func (api Api) EnableMenu(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	menu = menu.(entities.Menu).Enable()
-	api.repository.SaveEntity(menu)
+	err = api.repository.SaveEntity(menu)
+	if err != nil {
+		//FIX IT with not found as well
+		http.Error(w, "something wrong", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (api Api) DisableMenu(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := uuid.FromStringOrNil(vars["id"])
+	if id == uuid.Nil {
+		http.Error(w, "invalid menu id", http.StatusBadRequest)
+		return
+	}
+	menu, err := api.repository.GetEntity(entities.EmptyMenu(), id)
+	if err != nil {
+		//FIX IT with not found as well
+		http.Error(w, "something wrong", http.StatusInternalServerError)
+		return
+	}
+	menu = menu.(entities.Menu).Disable()
+	err = api.repository.SaveEntity(menu)
 	if err != nil {
 		//FIX IT with not found as well
 		http.Error(w, "something wrong", http.StatusInternalServerError)
