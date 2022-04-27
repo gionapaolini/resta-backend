@@ -145,3 +145,18 @@ func (repo MenuRepository) DisableMenu(menuID uuid.UUID) error {
 	}
 	return nil
 }
+
+func (repo MenuRepository) ChangeMenuName(menuID uuid.UUID, newName string) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `UPDATE menus SET name=$2 WHERE id=$1`
+	_, err = db.Exec(query, menuID, newName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
