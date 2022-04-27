@@ -23,10 +23,11 @@ func TestHandleEvent(t *testing.T) {
 
 	var dataReceived string
 
-	var testHandler = func(rawEvent *esdb.SubscriptionEvent) {
+	var testHandler = func(rawEvent *esdb.SubscriptionEvent) error {
 		var event testEvent1
 		json.Unmarshal(rawEvent.EventAppeared.Event.Data, &event)
 		dataReceived = event.Data
+		return nil
 	}
 
 	data := testEvent1{

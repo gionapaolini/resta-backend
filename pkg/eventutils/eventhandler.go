@@ -8,7 +8,7 @@ import (
 
 type EventHandler struct {
 	subscription *esdb.PersistentSubscription
-	handlers     map[string]func(rawEvent *esdb.SubscriptionEvent)
+	handlers     map[string]func(rawEvent *esdb.SubscriptionEvent) error
 }
 
 func NewEventHandler(client *esdb.Client, groupName string) EventHandler {
@@ -22,11 +22,11 @@ func NewEventHandler(client *esdb.Client, groupName string) EventHandler {
 	}
 	return EventHandler{
 		subscription: sub,
-		handlers:     make(map[string]func(rawEvent *esdb.SubscriptionEvent)),
+		handlers:     make(map[string]func(rawEvent *esdb.SubscriptionEvent) error),
 	}
 }
 
-func (handler EventHandler) HandleEvent(eventName string, fn func(rawEvent *esdb.SubscriptionEvent)) EventHandler {
+func (handler EventHandler) HandleEvent(eventName string, fn func(rawEvent *esdb.SubscriptionEvent) error) EventHandler {
 	handler.handlers[eventName] = fn
 	return handler
 }
@@ -36,8 +36,12 @@ func (handler EventHandler) Start() {
 		for {
 			event := handler.subscription.Recv()
 			if event.EventAppeared != nil {
-				handler.handlers[event.EventAppeared.Event.EventType](event)
-				handler.subscription.Ack(event.EventAppeared)
+				err := handler.handlers[event.EventAppeared.Event.EventType](event)
+				if err != nil {
+					handler.subscription.Nack(err.Error(), esdb.Nack_Retry)
+				} else {
+					handler.subscription.Ack(event.EventAppeared)
+				}
 			}
 			if event.SubscriptionDropped != nil {
 				break
