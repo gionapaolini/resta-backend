@@ -28,3 +28,14 @@ func (menuEventHandler MenuEventHandler) HandleMenuCreated(rawEvent *esdb.Subscr
 	err = menuEventHandler.menuRepository.CreateMenu(event.GetEntityID(), event.Name)
 	return err
 }
+
+func (menuEventHandler MenuEventHandler) HandleMenuEnabled(rawEvent *esdb.SubscriptionEvent) error {
+	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
+	var event events.MenuEnabled
+	err := json.Unmarshal(rawData, &event)
+	if err != nil {
+		panic(err)
+	}
+	err = menuEventHandler.menuRepository.EnableMenu(event.GetEntityID())
+	return err
+}

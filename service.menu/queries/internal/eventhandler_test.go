@@ -41,3 +41,35 @@ func TestHandleMenuCreatedMessage(t *testing.T) {
 	// Assert
 	mockMenuRepository.AssertExpectations(t)
 }
+
+func TestHandleMenuEnabledMessage(t *testing.T) {
+	// Arrange
+	menuID := utils.GenerateNewUUID()
+
+	menuEnabledEvent := events.MenuEnabled{
+		EntityEventInfo: eventutils.NewEntityEventInfo(menuID),
+	}
+
+	incomingMessage := &esdb.SubscriptionEvent{
+		EventAppeared: &esdb.ResolvedEvent{
+			Event: &esdb.RecordedEvent{
+				Data: utils.SerializeObject(menuEnabledEvent),
+			},
+		},
+		SubscriptionDropped: &esdb.SubscriptionDropped{},
+		CheckPointReached:   &esdb.Position{},
+	}
+
+	mockMenuRepository := new(MockMenuRepository)
+	mockMenuRepository.
+		On("EnableMenu", menuID).
+		Return(nil)
+
+	eventHandler := NewMenuEventHandler(mockMenuRepository)
+
+	// Act
+	eventHandler.HandleMenuEnabled(incomingMessage)
+
+	// Assert
+	mockMenuRepository.AssertExpectations(t)
+}
