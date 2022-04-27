@@ -8,3 +8,11 @@ type MenuCreated struct {
 	eventutils.EntityEventInfo
 	Name string
 }
+
+type MenuEnabled struct {
+	eventutils.EntityEventInfo
+}
+
+type MenuDisabled struct {
+	eventutils.EntityEventInfo
+}

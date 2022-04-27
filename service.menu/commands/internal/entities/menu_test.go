@@ -25,6 +25,31 @@ func Test_CreateMenu(t *testing.T) {
 	require.False(t, menu.IsDeleted)
 }
 
+func Test_EnableMenu(t *testing.T) {
+	// Arrange
+	menu := NewMenu()
+
+	// Act
+	menu = menu.Enable()
+
+	// Assert
+	require.True(t, menu.IsEnabled())
+	require.IsType(t, events.MenuEnabled{}, menu.GetLatestEvents()[1])
+}
+
+func Test_DisableMenu(t *testing.T) {
+	// Arrange
+	menu := NewMenu()
+	menu = menu.Enable()
+
+	// Act
+	menu = menu.Disable()
+
+	// Assert
+	require.False(t, menu.IsEnabled())
+	require.IsType(t, events.MenuDisabled{}, menu.GetLatestEvents()[2])
+}
+
 func Test_DeserializeMenuEvent(t *testing.T) {
 	// Arrange
 	events := []eventutils.IEvent{
