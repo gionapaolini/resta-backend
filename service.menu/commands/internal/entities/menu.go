@@ -108,6 +108,10 @@ func (menu Menu) DeserializeEvent(jsonData []byte) eventutils.IEvent {
 		var e events.MenuDisabled
 		json.Unmarshal(rawData, &e)
 		return e
+	case "MenuNameChanged":
+		var e events.MenuNameChanged
+		json.Unmarshal(rawData, &e)
+		return e
 	default:
 		return nil
 	}

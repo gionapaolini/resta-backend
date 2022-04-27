@@ -16,3 +16,8 @@ type MenuEnabled struct {
 type MenuDisabled struct {
 	eventutils.EntityEventInfo
 }
+
+type MenuNameChanged struct {
+	eventutils.EntityEventInfo
+	NewName string
+}
