@@ -46,3 +46,43 @@ func TestGetMenu(t *testing.T) {
 
 	require.Equal(t, menu, menuResponse)
 }
+
+func TestGetMenus(t *testing.T) {
+	// Arrange
+	menus := []MenuView{
+		{
+			ID:   utils.GenerateNewUUID(),
+			Name: "TestName1",
+		},
+		{
+			ID:   utils.GenerateNewUUID(),
+			Name: "TestName2",
+		},
+	}
+	mockMenuRepository := new(MockMenuRepository)
+	mockMenuRepository.
+		On("GetAllMenus").
+		Return(menus, nil)
+
+	router := mux.NewRouter()
+	SetupApi(router, mockMenuRepository)
+	recorder := httptest.NewRecorder()
+
+	url := "/menus"
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	require.NoError(t, err)
+
+	// Act
+	router.ServeHTTP(recorder, request)
+
+	// Assert
+	require.Equal(t, http.StatusOK, recorder.Code)
+
+	response, err := ioutil.ReadAll(recorder.Body)
+	require.NoError(t, err)
+
+	var menuResponse []MenuView
+	err = json.Unmarshal(response, &menuResponse)
+
+	require.Equal(t, menus, menuResponse)
+}

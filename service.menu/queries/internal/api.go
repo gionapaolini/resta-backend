@@ -22,6 +22,7 @@ func SetupApi(router *mux.Router, repo IMenuRepository) {
 
 func (api Api) setupRoutes(r *mux.Router) {
 	r.HandleFunc("/menus/{id}", api.GetMenu)
+	r.HandleFunc("/menus", api.GetAllMenus)
 }
 
 func (api Api) GetMenu(w http.ResponseWriter, r *http.Request) {
@@ -32,6 +33,16 @@ func (api Api) GetMenu(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	menu, err := api.menuRepository.GetMenu(id)
+	if err != nil {
+		//FIX IT with not found as well
+		http.Error(w, "something wrong", http.StatusInternalServerError)
+		return
+	}
+	json.NewEncoder(w).Encode(menu)
+}
+
+func (api Api) GetAllMenus(w http.ResponseWriter, r *http.Request) {
+	menu, err := api.menuRepository.GetAllMenus()
 	if err != nil {
 		//FIX IT with not found as well
 		http.Error(w, "something wrong", http.StatusInternalServerError)
