@@ -20,6 +20,7 @@ type IMenuRepository interface {
 	GetAllMenus() ([]MenuView, error)
 	DeleteMenu(menuID uuid.UUID) error
 	EnableMenu(menuID uuid.UUID) error
+	DisableMenu(menuID uuid.UUID) error
 }
 
 type MenuRepository struct {
@@ -123,6 +124,21 @@ func (repo MenuRepository) EnableMenu(menuID uuid.UUID) error {
 	defer db.Close()
 
 	query := `UPDATE menus SET isEnabled=TRUE WHERE id=$1`
+	_, err = db.Exec(query, menuID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo MenuRepository) DisableMenu(menuID uuid.UUID) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `UPDATE menus SET isEnabled=FALSE WHERE id=$1`
 	_, err = db.Exec(query, menuID)
 	if err != nil {
 		return err

@@ -75,3 +75,23 @@ func TestEnableMenu(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, returnedMenu.IsEnabled)
 }
+
+func TestDisableMenu(t *testing.T) {
+	// Arrange
+	menuID := utils.GenerateNewUUID()
+	menuName := "TestMenu"
+
+	viewRepository := NewMenuRepository(pgConnectionString)
+	defer viewRepository.DeleteMenu(menuID)
+	err := viewRepository.CreateMenu(menuID, menuName)
+	err = viewRepository.EnableMenu(menuID)
+
+	// Act
+	err = viewRepository.DisableMenu(menuID)
+
+	// Assert
+	require.NoError(t, err)
+	returnedMenu, err := viewRepository.GetMenu(menuID)
+	require.NoError(t, err)
+	require.False(t, returnedMenu.IsEnabled)
+}
