@@ -3,6 +3,7 @@ package entities
 import (
 	"encoding/json"
 
+	"github.com/Resta-Inc/resta/pkg/events"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
@@ -22,13 +23,12 @@ type MenuState struct {
 func NewMenu() Menu {
 	menuID := utils.GenerateNewUUID()
 
-	event := MenuCreated{
+	event := events.MenuCreated{
 		EntityEventInfo: eventutils.NewEntityEventInfo(menuID),
 		Name:            resources.DefaultMenuName("en"),
 	}
 
 	menu := EmptyMenu()
-
 	return eventutils.AddNewEvent(menu, event).(Menu)
 }
 
@@ -43,24 +43,26 @@ func (menu Menu) GetName() string {
 }
 
 // Events
-type MenuCreated struct {
-	eventutils.EntityEventInfo
-	Name string
+func (menu Menu) ApplyEvent(event eventutils.IEntityEvent) eventutils.IEntity {
+	eventType := utils.GetType(event)
+	switch eventType {
+	case "MenuCreated":
+		menu = menu.applyMenuCreated(event.(events.MenuCreated))
+	}
+	return menu
 }
 
-func (event MenuCreated) Apply(entity eventutils.IEntity) eventutils.IEntity {
-	menu := entity.(Menu)
+func (menu Menu) applyMenuCreated(event events.MenuCreated) Menu {
 	menu.State.Name = event.Name
 	menu.ID = event.EntityID
 	return menu
 }
 
-// Entity Logic
 func (menu Menu) DeserializeEvent(jsonData []byte) eventutils.IEvent {
 	eventType, rawData := eventutils.GetRawDataFromSerializedEvent(jsonData)
 	switch eventType {
 	case "MenuCreated":
-		var e MenuCreated
+		var e events.MenuCreated
 		json.Unmarshal(rawData, &e)
 		return e
 	default:

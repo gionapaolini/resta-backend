@@ -49,20 +49,29 @@ type TestEntityCreated struct {
 	Name string
 }
 
-func (event TestEntityCreated) Apply(entity IEntity) IEntity {
-	testEntity := entity.(TestEntity)
-	testEntity.State.Name = event.Name
-	testEntity.ID = event.EntityID
-	return testEntity
-}
-
 type TestEntityNameChanged struct {
 	EntityEventInfo
 	NewName string
 }
 
-func (event TestEntityNameChanged) Apply(entity IEntity) IEntity {
-	testEntity := entity.(TestEntity)
+func (testEntity TestEntity) ApplyEvent(event IEntityEvent) IEntity {
+	eventType := utils.GetType(event)
+	switch eventType {
+	case "TestEntityCreated":
+		testEntity = testEntity.applyTestEntityCreated(event.(TestEntityCreated))
+	case "TestEntityNameChanged":
+		testEntity = testEntity.applyTestEntityNameChanged(event.(TestEntityNameChanged))
+	}
+	return testEntity
+}
+
+func (testEntity TestEntity) applyTestEntityCreated(event TestEntityCreated) TestEntity {
+	testEntity.State.Name = event.Name
+	testEntity.ID = event.EntityID
+	return testEntity
+}
+
+func (testEntity TestEntity) applyTestEntityNameChanged(event TestEntityNameChanged) TestEntity {
 	testEntity.State.Name = event.NewName
 	return testEntity
 }

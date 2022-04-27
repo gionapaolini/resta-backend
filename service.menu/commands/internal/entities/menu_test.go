@@ -3,6 +3,7 @@ package entities
 import (
 	"testing"
 
+	"github.com/Resta-Inc/resta/pkg/events"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
@@ -18,7 +19,7 @@ func Test_CreateMenu(t *testing.T) {
 	require.Len(t, menu.GetAllEvents(), 1)
 	require.Len(t, menu.GetCommittedEvents(), 0)
 	require.Len(t, menu.GetLatestEvents(), 1)
-	require.IsType(t, MenuCreated{}, menu.GetLatestEvents()[0])
+	require.IsType(t, events.MenuCreated{}, menu.GetLatestEvents()[0])
 	require.Equal(t, utils.Time.Now(), menu.GetLatestEvents()[0].GetDateTime())
 	require.Equal(t, menu.ID, menu.GetLatestEvents()[0].(eventutils.IEntityEvent).GetEntityID())
 	require.False(t, menu.IsDeleted)
@@ -27,7 +28,7 @@ func Test_CreateMenu(t *testing.T) {
 func Test_DeserializeMenuEvent(t *testing.T) {
 	// Arrange
 	events := []eventutils.IEvent{
-		MenuCreated{
+		events.MenuCreated{
 			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
 		},
 	}

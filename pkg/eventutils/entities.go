@@ -14,6 +14,7 @@ type IEntity interface {
 	GetLatestEvents() []IEvent
 	GetCommittedEvents() []IEvent
 	GetAllEvents() []IEvent
+	ApplyEvent(event IEntityEvent) IEntity
 	DeserializeEvent(jsonData []byte) IEvent
 
 	isEmptyEntity() bool
@@ -59,7 +60,6 @@ func (entity *Entity) setCommittedEvents(events []IEvent) {
 type IEntityEvent interface {
 	IEvent
 	GetEntityID() uuid.UUID
-	Apply(entity IEntity) IEntity
 }
 
 type EntityEventInfo struct {
@@ -91,13 +91,13 @@ func ReconstructFromEvents(entity IEntity, events []IEvent) (IEntity, error) {
 
 func AddNewEvent(entity IEntity, event IEvent) IEntity {
 	entity.setLatestEvents(append(entity.GetLatestEvents(), event))
-	entity = event.(IEntityEvent).Apply(entity)
+	entity = entity.ApplyEvent(event.(IEntityEvent))
 	return entity
 }
 
 func AddEvent(entity IEntity, event IEvent) IEntity {
 	entity.setCommittedEvents(append(entity.GetCommittedEvents(), event))
-	entity = event.(IEntityEvent).Apply(entity)
+	entity = entity.ApplyEvent(event.(IEntityEvent))
 	return entity
 }
 
