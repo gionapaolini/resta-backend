@@ -42,12 +42,13 @@ func (repo EntityRepository) GetEntity(entity IEntity, id uuid.UUID) (IEntity, e
 }
 
 func (repo EntityRepository) SaveEntity(entity IEntity) error {
+	var err error
 	if len(entity.GetCommittedEvents()) == 0 {
-		repo.EventStore.SaveEventsToNewStream(GetStreamName(entity), entity.GetLatestEvents())
+		_, err = repo.EventStore.SaveEventsToNewStream(GetStreamName(entity), entity.GetLatestEvents())
 	} else {
-		repo.EventStore.SaveEventsToExistingStream(GetStreamName(entity), entity.GetLatestEvents())
+		_, err = repo.EventStore.SaveEventsToExistingStream(GetStreamName(entity), entity.GetLatestEvents())
 	}
-	return nil
+	return err
 }
 
 // Errors

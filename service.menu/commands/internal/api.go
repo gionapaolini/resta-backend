@@ -33,8 +33,7 @@ func (api Api) CreateNewMenu(w http.ResponseWriter, r *http.Request) {
 	menu := entities.NewMenu()
 	err := api.repository.SaveEntity(menu)
 	if err != nil {
-		//FIX IT with not found as well
-		http.Error(w, "something wrong", http.StatusInternalServerError)
+		http.Error(w, "Something went wrong on our servers. Please re-try later", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
