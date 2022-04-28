@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 
@@ -34,8 +35,11 @@ func (api Api) GetMenu(w http.ResponseWriter, r *http.Request) {
 	}
 	menu, err := api.menuRepository.GetMenu(id)
 	if err != nil {
-		//FIX IT with not found as well
-		http.Error(w, "something wrong", http.StatusInternalServerError)
+		if err == sql.ErrNoRows {
+			http.Error(w, "Menu not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Something went wrong when trying to find the menu, please try again later.", http.StatusInternalServerError)
+		}
 		return
 	}
 	json.NewEncoder(w).Encode(menu)
@@ -44,8 +48,7 @@ func (api Api) GetMenu(w http.ResponseWriter, r *http.Request) {
 func (api Api) GetAllMenus(w http.ResponseWriter, r *http.Request) {
 	menu, err := api.menuRepository.GetAllMenus()
 	if err != nil {
-		//FIX IT with not found as well
-		http.Error(w, "something wrong", http.StatusInternalServerError)
+		http.Error(w, "Something went wrong when trying to find the menus, please try again later.", http.StatusInternalServerError)
 		return
 	}
 	json.NewEncoder(w).Encode(menu)
