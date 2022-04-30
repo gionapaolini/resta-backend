@@ -63,6 +63,19 @@ func Test_ChangeMenuName(t *testing.T) {
 	require.IsType(t, events.MenuNameChanged{}, menu.GetLatestEvents()[1])
 }
 
+func Test_AddCategory(t *testing.T) {
+	// Arrange
+	categoryID := utils.GenerateNewUUID()
+	menu := NewMenu()
+
+	// Act
+	menu = menu.AddCategory(categoryID)
+
+	// Assert
+	require.Contains(t, menu.GetCategoriesIDs(), categoryID)
+	require.IsType(t, events.CategoryAddedToMenu{}, menu.GetLatestEvents()[1])
+}
+
 func Test_DeserializeMenuEvent(t *testing.T) {
 	// Arrange
 	events := []eventutils.IEvent{
@@ -76,6 +89,9 @@ func Test_DeserializeMenuEvent(t *testing.T) {
 			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
 		},
 		events.MenuNameChanged{
+			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
+		},
+		events.CategoryAddedToMenu{
 			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
 		},
 	}

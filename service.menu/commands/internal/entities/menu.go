@@ -7,6 +7,7 @@ import (
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
+	"github.com/gofrs/uuid"
 )
 
 // Models
@@ -16,8 +17,9 @@ type Menu struct {
 }
 
 type MenuState struct {
-	Name      string
-	IsEnabled bool
+	Name          string
+	IsEnabled     bool
+	CategoriesIDs []uuid.UUID
 }
 
 // Business Logic
@@ -47,6 +49,10 @@ func (menu Menu) IsEnabled() bool {
 	return menu.State.IsEnabled
 }
 
+func (menu Menu) GetCategoriesIDs() []uuid.UUID {
+	return menu.State.CategoriesIDs
+}
+
 func (menu Menu) Enable() Menu {
 	event := events.MenuEnabled{
 		EntityEventInfo: eventutils.NewEntityEventInfo(menu.GetID()),
@@ -72,6 +78,15 @@ func (menu Menu) ChangeName(newName string) Menu {
 	return menu
 }
 
+func (menu Menu) AddCategory(categoryID uuid.UUID) Menu {
+	event := events.CategoryAddedToMenu{
+		EntityEventInfo: eventutils.NewEntityEventInfo(menu.GetID()),
+		CategoryID:      categoryID,
+	}
+	menu = eventutils.AddNewEvent(menu, event).(Menu)
+	return menu
+}
+
 // Events
 func (menu Menu) ApplyEvent(event eventutils.IEntityEvent) eventutils.IEntity {
 	eventType := utils.GetType(event)
@@ -84,6 +99,8 @@ func (menu Menu) ApplyEvent(event eventutils.IEntityEvent) eventutils.IEntity {
 		menu = menu.applyMenuDisabled(event.(events.MenuDisabled))
 	case "MenuNameChanged":
 		menu = menu.applyMenuNameChanged(event.(events.MenuNameChanged))
+	case "CategoryAddedToMenu":
+		menu = menu.applyCategoryAddedToMenu(event.(events.CategoryAddedToMenu))
 	}
 	return menu
 }
@@ -109,6 +126,11 @@ func (menu Menu) applyMenuNameChanged(event events.MenuNameChanged) Menu {
 	return menu
 }
 
+func (menu Menu) applyCategoryAddedToMenu(event events.CategoryAddedToMenu) Menu {
+	menu.State.CategoriesIDs = append(menu.State.CategoriesIDs, event.CategoryID)
+	return menu
+}
+
 func (menu Menu) DeserializeEvent(jsonData []byte) eventutils.IEvent {
 	eventType, rawData := eventutils.GetRawDataFromSerializedEvent(jsonData)
 	switch eventType {
@@ -126,6 +148,10 @@ func (menu Menu) DeserializeEvent(jsonData []byte) eventutils.IEvent {
 		return e
 	case "MenuNameChanged":
 		var e events.MenuNameChanged
+		json.Unmarshal(rawData, &e)
+		return e
+	case "CategoryAddedToMenu":
+		var e events.CategoryAddedToMenu
 		json.Unmarshal(rawData, &e)
 		return e
 	default:
