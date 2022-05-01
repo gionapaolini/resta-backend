@@ -12,7 +12,8 @@ import (
 
 func TestCreateCategory(t *testing.T) {
 	// Act
-	category := NewCategory()
+	menuID := utils.GenerateNewUUID()
+	category := NewCategory(menuID)
 
 	// Assert
 	require.Equal(t, resources.DefaultCategoryName("en"), category.GetName())
