@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS menus;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS menu_categories;

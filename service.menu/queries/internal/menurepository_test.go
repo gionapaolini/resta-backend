@@ -115,3 +115,23 @@ func TestChangeMenuName(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, newMenuName, returnedMenu.Name)
 }
+
+func TestCreateCategory(t *testing.T) {
+	// Arrange
+	categoryID, categoryName, imageURL :=
+		utils.GenerateNewUUID(), "TestCategory", "test.com"
+
+	viewRepository := NewMenuRepository(pgConnectionString)
+	defer viewRepository.DeleteCategory(categoryID)
+
+	// Act
+	err := viewRepository.CreateCategory(categoryID, categoryName, imageURL)
+
+	// Assert
+	require.NoError(t, err)
+	returnedCategory, err := viewRepository.GetCategory(categoryID)
+	require.NoError(t, err)
+	require.Equal(t, categoryID, returnedCategory.ID)
+	require.Equal(t, categoryName, returnedCategory.Name)
+	require.Equal(t, imageURL, returnedCategory.ImageURL)
+}

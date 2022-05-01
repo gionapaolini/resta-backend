@@ -8,12 +8,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type MenuView struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	IsEnabled bool      `json:"isEnabled"`
-}
-
 type IMenuRepository interface {
 	CreateMenu(menuID uuid.UUID, menuName string) error
 	GetMenu(menuID uuid.UUID) (MenuView, error)
@@ -124,7 +118,7 @@ func (repo MenuRepository) EnableMenu(menuID uuid.UUID) error {
 	}
 	defer db.Close()
 
-	query := `UPDATE menus SET isEnabled=TRUE WHERE id=$1`
+	query := `UPDATE menus SET is_enabled=TRUE WHERE id=$1`
 	_, err = db.Exec(query, menuID)
 	if err != nil {
 		return err
@@ -139,7 +133,7 @@ func (repo MenuRepository) DisableMenu(menuID uuid.UUID) error {
 	}
 	defer db.Close()
 
-	query := `UPDATE menus SET isEnabled=FALSE WHERE id=$1`
+	query := `UPDATE menus SET is_enabled=FALSE WHERE id=$1`
 	_, err = db.Exec(query, menuID)
 	if err != nil {
 		return err
@@ -160,4 +154,58 @@ func (repo MenuRepository) ChangeMenuName(menuID uuid.UUID, newName string) erro
 		return err
 	}
 	return nil
+}
+
+func (repo MenuRepository) CreateCategory(categoryID uuid.UUID, categoryName, imageURL string) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `INSERT INTO categories ("id", "name", "image_url") VALUES ($1, $2, $3)`
+	_, err = db.Exec(query, categoryID, categoryName, imageURL)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo MenuRepository) DeleteCategory(categoryID uuid.UUID) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `DELETE FROM categories WHERE id=$1`
+	_, err = db.Exec(query, categoryID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo MenuRepository) GetCategory(categoryID uuid.UUID) (CategoryView, error) {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return CategoryView{}, err
+	}
+	defer db.Close()
+
+	var categoryView CategoryView
+
+	query := `SELECT * FROM categories WHERE id=$1`
+	row := db.QueryRow(query, categoryID)
+
+	err = row.Scan(
+		&categoryView.ID,
+		&categoryView.Name,
+		&categoryView.ImageURL,
+	)
+
+	if err != nil {
+		return CategoryView{}, err
+	}
+	return categoryView, nil
 }
