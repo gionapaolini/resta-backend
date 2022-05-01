@@ -45,3 +45,25 @@ func (m MockMenuRepository) ChangeMenuName(menuID uuid.UUID, newName string) err
 	args := m.Called(menuID, newName)
 	return args.Error(0)
 }
+
+func (m MockMenuRepository) CreateCategory(categoryID uuid.UUID, categoryName, imageURL string) error {
+	args := m.Called(categoryID, categoryName, imageURL)
+	return args.Error(0)
+}
+
+func (m MockMenuRepository) GetCategory(categoryID uuid.UUID) (CategoryView, error) {
+	args := m.Called(categoryID)
+	categoryView, _ := args.Get(0).(CategoryView)
+	return categoryView, args.Error(1)
+}
+
+func (m MockMenuRepository) AddCategoryToMenu(menuID, categoryID uuid.UUID) error {
+	args := m.Called(menuID, categoryID)
+	return args.Error(0)
+}
+
+func (m MockMenuRepository) GetMenuCategoriesIDs(menuID uuid.UUID) ([]uuid.UUID, error) {
+	args := m.Called(menuID)
+	categoriesIDs, _ := args.Get(0).([]uuid.UUID)
+	return categoriesIDs, args.Error(1)
+}
