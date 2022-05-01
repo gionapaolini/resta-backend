@@ -127,3 +127,30 @@ func TestChangeMenuName(t *testing.T) {
 	require.Equal(t, http.StatusOK, recorder.Code)
 	mockEntityRepository.AssertExpectations(t)
 }
+
+func TestNewCategory(t *testing.T) {
+	// Arrange
+	menu := entities.NewMenu()
+	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository.
+		On("GetEntity", entities.EmptyMenu(), menu.ID).
+		Return(menu, nil)
+
+	mockEntityRepository.
+		On("SaveEntity", mock.AnythingOfType("Category")).
+		Return(nil)
+	router := mux.NewRouter()
+	SetupApi(router, mockEntityRepository)
+	recorder := httptest.NewRecorder()
+	jsonBody := fmt.Sprintf(`{"menuID": "%s"}`, menu.ID)
+	url := "/categories"
+	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(jsonBody))
+	require.NoError(t, err)
+
+	// Act
+	router.ServeHTTP(recorder, request)
+
+	// Assert
+	require.Equal(t, http.StatusCreated, recorder.Code)
+	mockEntityRepository.AssertExpectations(t)
+}

@@ -28,6 +28,8 @@ func (api Api) setupRoutes(r *mux.Router) {
 	r.HandleFunc("/menus/{id}/enable", api.EnableMenu).Methods("POST")
 	r.HandleFunc("/menus/{id}/disable", api.DisableMenu).Methods("POST")
 	r.HandleFunc("/menus/{id}/change-name", api.ChangeMenuName).Methods("POST")
+
+	r.HandleFunc("/categories", api.CreateNewCategory).Methods("POST")
 }
 
 func (api Api) CreateNewMenu(w http.ResponseWriter, r *http.Request) {
@@ -121,4 +123,34 @@ func (api Api) ChangeMenuName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+func (api Api) CreateNewCategory(w http.ResponseWriter, r *http.Request) {
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	var body map[string]string
+	err := json.Unmarshal(reqBody, &body)
+	menuID := uuid.FromStringOrNil(body["menuID"])
+	if err != nil || body["menuID"] == "" || menuID == uuid.Nil {
+		http.Error(w, "menuID is not valid", http.StatusBadRequest)
+		return
+	}
+	menu, err := api.repository.GetEntity(entities.EmptyMenu(), menuID)
+	if err != nil {
+		if errors.Is(err, eventutils.ErrEntityNotFound) {
+			http.Error(w, "Menu not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Something went wrong when trying to find the menu, please try again later.", http.StatusInternalServerError)
+		}
+		return
+	}
+	if menu.(entities.Menu).IsDeleted {
+		http.Error(w, "Menu not found", http.StatusNotFound)
+	}
+	category := entities.NewCategory(menuID)
+	err = api.repository.SaveEntity(category)
+	if err != nil {
+		http.Error(w, "Something went wrong when saving the changes. Please try again later", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
 }

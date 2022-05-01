@@ -7,6 +7,7 @@ import (
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
+	"github.com/gofrs/uuid"
 )
 
 type Category struct {
@@ -19,13 +20,14 @@ type CategoryState struct {
 }
 
 // Business Logic
-func NewCategory() Category {
+func NewCategory(menuID uuid.UUID) Category {
 	categoryID := utils.GenerateNewUUID()
 
 	event := events.CategoryCreated{
 		EntityEventInfo: eventutils.NewEntityEventInfo(categoryID),
 		Name:            resources.DefaultCategoryName("en"),
 		ImageURL:        resources.DefaultCategoryImageUrl(),
+		ParentMenuID:    menuID,
 	}
 
 	category := EmptyCategory()
