@@ -209,3 +209,58 @@ func (repo MenuRepository) GetCategory(categoryID uuid.UUID) (CategoryView, erro
 	}
 	return categoryView, nil
 }
+
+func (repo MenuRepository) AddCategoryToMenu(menuID, categoryID uuid.UUID) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `INSERT INTO menus_categories ("menu_id", "category_id") VALUES ($1, $2)`
+	_, err = db.Exec(query, menuID, categoryID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo MenuRepository) RemoveCategoryFromMenu(menuID, categoryID uuid.UUID) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `DELETE FROM menus_categories WHERE menu_id=$1 AND category_id=$2`
+	_, err = db.Exec(query, menuID, categoryID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo MenuRepository) GetMenuCategoriesIDs(menuID uuid.UUID) ([]uuid.UUID, error) {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return []uuid.UUID{}, err
+	}
+	defer db.Close()
+
+	var categoriesIDs []uuid.UUID
+
+	query := `SELECT category_id FROM menus_categories WHERE menu_id=$1`
+	rows, err := db.Query(query, menuID)
+	defer rows.Close()
+
+	for rows.Next() {
+		var categoryID uuid.UUID
+		err = rows.Scan(&categoryID)
+		if err != nil {
+			log.Fatalf("Unable to scan the row. %v", err)
+		}
+		categoriesIDs = append(categoriesIDs, categoryID)
+	}
+
+	return categoriesIDs, nil
+}

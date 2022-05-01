@@ -10,9 +10,9 @@ CREATE TABLE IF NOT EXISTS categories (
    image_url VARCHAR (50) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS menu_categories (
-   menu_id uuid,
-   category_id uuid,
+CREATE TABLE IF NOT EXISTS menus_categories (
+   menu_id uuid NOT NULL,
+   category_id uuid NOT NULL UNIQUE,
    PRIMARY KEY(menu_id, category_id),
    FOREIGN KEY(menu_id) REFERENCES menus(id),
    FOREIGN KEY(category_id) REFERENCES categories(id)

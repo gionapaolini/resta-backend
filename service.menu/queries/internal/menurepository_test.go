@@ -135,3 +135,30 @@ func TestCreateCategory(t *testing.T) {
 	require.Equal(t, categoryName, returnedCategory.Name)
 	require.Equal(t, imageURL, returnedCategory.ImageURL)
 }
+
+func TestAddCategoryToMenu(t *testing.T) {
+	// Arrange
+	viewRepository := NewMenuRepository(pgConnectionString)
+	menuID, menuName, categoryID, categoryName, imageURL :=
+		utils.GenerateNewUUID(),
+		"TestMenu",
+		utils.GenerateNewUUID(),
+		"TestCategory",
+		"test.com"
+
+	defer viewRepository.DeleteCategory(categoryID)
+	defer viewRepository.RemoveCategoryFromMenu(menuID, categoryID)
+	defer viewRepository.DeleteMenu(menuID)
+	viewRepository.CreateMenu(menuID, menuName)
+	viewRepository.CreateCategory(categoryID, categoryName, imageURL)
+
+	// Act
+	err := viewRepository.AddCategoryToMenu(menuID, categoryID)
+
+	// Assert
+	require.NoError(t, err)
+	returnedCategories, err := viewRepository.GetMenuCategoriesIDs(menuID)
+	require.NoError(t, err)
+	require.Len(t, returnedCategories, 1)
+	require.Equal(t, returnedCategories[0], categoryID)
+}
