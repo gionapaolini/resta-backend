@@ -22,8 +22,18 @@ const migrationsPath = "file:///src/service.menu/queries/internal/migrations"
 // const migrationsPath = "file://../service.menu/queries/internal/migrations"
 
 func main() {
-	CreateIntegrationTestGroupPersistentSubscription()
-	CreateMenuQueriesPersistentSubscription()
+	CreatePersistentSubscription("IntegrationTestGroup", []string{
+		"testEvent1",
+	})
+	CreatePersistentSubscription("menu.queries", []string{
+		"MenuCreated",
+		"MenuEnabled",
+		"MenuDisabled",
+		"MenuNameChanged",
+	})
+	CreatePersistentSubscription("menu.commands", []string{
+		"CategoryCreated",
+	})
 	RunPostgresMigrations()
 }
 
@@ -44,19 +54,17 @@ func RunPostgresMigrations() {
 	panic(err)
 }
 
-func CreateIntegrationTestGroupPersistentSubscription() {
+func CreatePersistentSubscription(groupName string, events []string) {
 	settings, _ := esdb.ParseConnectionString(eventStoreConnectionString)
 	db, _ := esdb.NewClient(settings)
 
 	err := db.CreatePersistentSubscriptionAll(
 		context.Background(),
-		"IntegrationTestGroup",
+		groupName,
 		esdb.PersistentAllSubscriptionOptions{
 			Filter: &esdb.SubscriptionFilter{
-				Type: esdb.EventFilterType,
-				Prefixes: []string{
-					"testEvent1",
-				},
+				Type:     esdb.EventFilterType,
+				Prefixes: events,
 			},
 		},
 	)
@@ -70,37 +78,4 @@ func CreateIntegrationTestGroupPersistentSubscription() {
 		}
 		panic(err)
 	}
-
-}
-
-func CreateMenuQueriesPersistentSubscription() {
-	settings, _ := esdb.ParseConnectionString(eventStoreConnectionString)
-	db, _ := esdb.NewClient(settings)
-
-	err := db.CreatePersistentSubscriptionAll(
-		context.Background(),
-		"menu.queries",
-		esdb.PersistentAllSubscriptionOptions{
-			Filter: &esdb.SubscriptionFilter{
-				Type: esdb.EventFilterType,
-				Prefixes: []string{
-					"MenuCreated",
-					"MenuEnabled",
-					"MenuDisabled",
-					"MenuNameChanged",
-				},
-			},
-		},
-	)
-	if err != nil {
-		var badInputErr *esdb.PersistentSubscriptionError
-		if errors.As(err, &badInputErr) {
-			if badInputErr.Code == 6 {
-				return
-			}
-			panic(badInputErr)
-		}
-		panic(err)
-	}
-
 }

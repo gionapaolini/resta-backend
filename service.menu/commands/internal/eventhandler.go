@@ -9,17 +9,17 @@ import (
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 )
 
-type EventHandler struct {
+type MenuEventHandler struct {
 	entityRepository eventutils.IEntityRepository
 }
 
-func NewEventHandler(repo eventutils.IEntityRepository) EventHandler {
-	return EventHandler{
+func NewMenuEventHandler(repo eventutils.IEntityRepository) MenuEventHandler {
+	return MenuEventHandler{
 		entityRepository: repo,
 	}
 }
 
-func (eventHandler EventHandler) HandleCategoryCreated(rawEvent *esdb.SubscriptionEvent) error {
+func (eventHandler MenuEventHandler) HandleCategoryCreated(rawEvent *esdb.SubscriptionEvent) error {
 	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
 	var event events.CategoryCreated
 	err := json.Unmarshal(rawData, &event)

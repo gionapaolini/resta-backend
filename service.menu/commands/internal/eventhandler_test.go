@@ -46,7 +46,7 @@ func TestHandleCategoryCreatedMessage(t *testing.T) {
 		)).
 		Return(nil)
 
-	eventHandler := NewEventHandler(mockEntityRepository)
+	eventHandler := NewMenuEventHandler(mockEntityRepository)
 
 	// Act
 	eventHandler.HandleCategoryCreated(incomingMessage)
