@@ -17,6 +17,7 @@ type IMenuRepository interface {
 	DisableMenu(menuID uuid.UUID) error
 	ChangeMenuName(menuID uuid.UUID, newName string) error
 	CreateCategory(categoryID uuid.UUID, categoryName, imageURL string) error
+	AddCategoryToMenu(menuID, categoryID uuid.UUID) error
 }
 
 type MenuRepository struct {

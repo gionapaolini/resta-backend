@@ -72,3 +72,14 @@ func (menuEventHandler MenuEventHandler) HandleCategoryCreated(rawEvent *esdb.Su
 	err = menuEventHandler.menuRepository.CreateCategory(event.GetEntityID(), event.Name, event.ImageURL)
 	return err
 }
+
+func (menuEventHandler MenuEventHandler) HandleCategoryAddedToMenu(rawEvent *esdb.SubscriptionEvent) error {
+	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
+	var event events.CategoryAddedToMenu
+	err := json.Unmarshal(rawData, &event)
+	if err != nil {
+		return err
+	}
+	err = menuEventHandler.menuRepository.AddCategoryToMenu(event.GetEntityID(), event.CategoryID)
+	return err
+}
