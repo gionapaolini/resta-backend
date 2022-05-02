@@ -61,3 +61,9 @@ func (m MockMenuRepository) AddCategoryToMenu(menuID, categoryID uuid.UUID) erro
 	args := m.Called(menuID, categoryID)
 	return args.Error(0)
 }
+
+func (m MockMenuRepository) GetCategoriesByIDs(categoriesIDs []uuid.UUID) ([]CategoryView, error) {
+	args := m.Called(categoriesIDs)
+	categoriesViews, _ := args.Get(0).([]CategoryView)
+	return categoriesViews, args.Error(1)
+}

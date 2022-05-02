@@ -19,6 +19,7 @@ type IMenuRepository interface {
 	ChangeMenuName(menuID uuid.UUID, newName string) error
 	CreateCategory(categoryID uuid.UUID, categoryName, imageURL string) error
 	AddCategoryToMenu(menuID, categoryID uuid.UUID) error
+	GetCategoriesByIDs(categoriesIDs []uuid.UUID) ([]CategoryView, error)
 }
 
 type MenuRepository struct {

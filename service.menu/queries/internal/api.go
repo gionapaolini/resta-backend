@@ -3,7 +3,9 @@ package internal
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
@@ -24,6 +26,7 @@ func SetupApi(router *mux.Router, repo IMenuRepository) {
 func (api Api) setupRoutes(r *mux.Router) {
 	r.HandleFunc("/menus/{id}", api.GetMenu)
 	r.HandleFunc("/menus", api.GetAllMenus)
+	r.HandleFunc("/categories/by-ids", api.GetCategoriesByIDs)
 }
 
 func (api Api) GetMenu(w http.ResponseWriter, r *http.Request) {
@@ -52,4 +55,24 @@ func (api Api) GetAllMenus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(menu)
+}
+
+func (api Api) GetCategoriesByIDs(w http.ResponseWriter, r *http.Request) {
+	ids := r.URL.Query().Get("id")
+	uuids := []uuid.UUID{}
+	for _, v := range strings.Split(ids, ",") {
+		parsedID := uuid.FromStringOrNil(v)
+		if parsedID == uuid.Nil {
+			fmtError := fmt.Sprintf("invalid category id: %s", v)
+			http.Error(w, fmtError, http.StatusBadRequest)
+			return
+		}
+		uuids = append(uuids, parsedID)
+	}
+	categories, err := api.menuRepository.GetCategoriesByIDs(uuids)
+	if err != nil {
+		http.Error(w, "Something went wrong when trying to find the categories, please try again later.", http.StatusInternalServerError)
+		return
+	}
+	json.NewEncoder(w).Encode(categories)
 }
