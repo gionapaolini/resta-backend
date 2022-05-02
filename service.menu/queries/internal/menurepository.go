@@ -3,6 +3,7 @@ package internal
 import (
 	"database/sql"
 	"log"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	_ "github.com/lib/pq"
@@ -54,15 +55,22 @@ func (repo MenuRepository) GetMenu(menuID uuid.UUID) (MenuView, error) {
 
 	var menuView MenuView
 
-	query := `SELECT * FROM menus WHERE id=$1`
+	query := `
+		SELECT m.*, array_agg(mc.category_id) AS ids
+		FROM menus m
+		LEFT JOIN menus_categories mc ON m.id = mc.menu_id
+		WHERE m.id=$1
+		GROUP BY m.id;
+	`
 	row := db.QueryRow(query, menuID)
-
+	var categoriesIDs []uint8
 	err = row.Scan(
 		&menuView.ID,
 		&menuView.Name,
 		&menuView.IsEnabled,
+		&categoriesIDs,
 	)
-
+	populateCategoriesIDs(&menuView, categoriesIDs)
 	if err != nil {
 		return MenuView{}, err
 	}
@@ -78,17 +86,26 @@ func (repo MenuRepository) GetAllMenus() ([]MenuView, error) {
 
 	var menuViews []MenuView
 
-	query := `SELECT * FROM menus`
+	query := `
+		SELECT m.*, array_agg(mc.category_id) AS ids
+		FROM menus m
+		LEFT JOIN menus_categories mc ON m.id = mc.menu_id
+		GROUP BY m.id;
+	`
 	rows, err := db.Query(query)
 	defer rows.Close()
 
 	for rows.Next() {
 		var menuView MenuView
+		var categoriesIDs []uint8
 		err = rows.Scan(
 			&menuView.ID,
 			&menuView.Name,
 			&menuView.IsEnabled,
+			&categoriesIDs,
 		)
+
+		populateCategoriesIDs(&menuView, categoriesIDs)
 		if err != nil {
 			log.Fatalf("Unable to scan the row. %v", err)
 		}
@@ -265,4 +282,20 @@ func (repo MenuRepository) GetMenuCategoriesIDs(menuID uuid.UUID) ([]uuid.UUID, 
 	}
 
 	return categoriesIDs, nil
+}
+
+// helpers
+func populateCategoriesIDs(menuView *MenuView, categoriesIDs []uint8) {
+	categoriesIDsString := string(categoriesIDs)
+	if categoriesIDsString == "{NULL}" {
+		return
+	}
+	menuView.CategoriesIDs = []uuid.UUID{}
+	categoriesString := strings.TrimPrefix(categoriesIDsString, "{")
+	categoriesString = strings.TrimSuffix(categoriesString, "}")
+	categories := strings.Split(string(categoriesString), ",")
+	for _, v := range categories {
+		categoryUUID, _ := uuid.FromString(v)
+		menuView.CategoriesIDs = append(menuView.CategoriesIDs, categoryUUID)
+	}
 }

@@ -162,3 +162,51 @@ func TestAddCategoryToMenu(t *testing.T) {
 	require.Len(t, returnedCategories, 1)
 	require.Equal(t, returnedCategories[0], categoryID)
 }
+
+func TestGetMenu_ShouldHaveCategoriesIDPopulated(t *testing.T) {
+	// Arrange
+	viewRepository := NewMenuRepository(pgConnectionString)
+	menuID, menuName, categoryID1, categoryID2, categoryName, imageURL :=
+		utils.GenerateNewUUID(),
+		"TestMenu",
+		utils.GenerateNewUUID(),
+		utils.GenerateNewUUID(),
+		"TestCategory",
+		"test.com"
+
+	defer viewRepository.DeleteCategory(categoryID1)
+	defer viewRepository.DeleteCategory(categoryID2)
+	defer viewRepository.RemoveCategoryFromMenu(menuID, categoryID1)
+	defer viewRepository.RemoveCategoryFromMenu(menuID, categoryID2)
+	defer viewRepository.DeleteMenu(menuID)
+	viewRepository.CreateMenu(menuID, menuName)
+	viewRepository.CreateCategory(categoryID1, categoryName, imageURL)
+	viewRepository.CreateCategory(categoryID2, categoryName, imageURL)
+	viewRepository.AddCategoryToMenu(menuID, categoryID1)
+	viewRepository.AddCategoryToMenu(menuID, categoryID2)
+
+	// Act
+	returnedMenu, err := viewRepository.GetMenu(menuID)
+
+	// Assert
+	require.NoError(t, err)
+	require.Len(t, returnedMenu.CategoriesIDs, 2)
+	require.Contains(t, returnedMenu.CategoriesIDs, categoryID1)
+	require.Contains(t, returnedMenu.CategoriesIDs, categoryID2)
+}
+
+func TestGetMenu_WhenNoCategory_ShouldHaveEmptyCategoryList(t *testing.T) {
+	// Arrange
+	viewRepository := NewMenuRepository(pgConnectionString)
+	menuID, menuName := utils.GenerateNewUUID(), "TestMenu"
+
+	defer viewRepository.DeleteMenu(menuID)
+	viewRepository.CreateMenu(menuID, menuName)
+
+	// Act
+	returnedMenu, err := viewRepository.GetMenu(menuID)
+
+	// Assert
+	require.NoError(t, err)
+	require.Len(t, returnedMenu.CategoriesIDs, 0)
+}
