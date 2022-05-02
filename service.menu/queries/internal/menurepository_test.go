@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Resta-Inc/resta/pkg/utils"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -157,10 +158,10 @@ func TestAddCategoryToMenu(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
-	returnedCategories, err := viewRepository.GetMenuCategoriesIDs(menuID)
+	returnedMenu, err := viewRepository.GetMenu(menuID)
 	require.NoError(t, err)
-	require.Len(t, returnedCategories, 1)
-	require.Equal(t, returnedCategories[0], categoryID)
+	require.Len(t, returnedMenu.CategoriesIDs, 1)
+	require.Equal(t, returnedMenu.CategoriesIDs[0], categoryID)
 }
 
 func TestGetMenu_ShouldHaveCategoriesIDPopulated(t *testing.T) {
@@ -209,4 +210,28 @@ func TestGetMenu_WhenNoCategory_ShouldHaveEmptyCategoryList(t *testing.T) {
 	// Assert
 	require.NoError(t, err)
 	require.Len(t, returnedMenu.CategoriesIDs, 0)
+}
+
+func TestGetCategoriesByIDs(t *testing.T) {
+	// Arrange
+	viewRepository := NewMenuRepository(pgConnectionString)
+	categoryID1, categoryID2, categoryName, imageURL :=
+		utils.GenerateNewUUID(),
+		utils.GenerateNewUUID(),
+		"TestCategory",
+		"test.com"
+
+	defer viewRepository.DeleteCategory(categoryID1)
+	defer viewRepository.DeleteCategory(categoryID2)
+	viewRepository.CreateCategory(categoryID1, categoryName, imageURL)
+	viewRepository.CreateCategory(categoryID2, categoryName, imageURL)
+
+	// Act
+	categories, err := viewRepository.GetCategoriesByIDs([]uuid.UUID{categoryID1, categoryID2})
+
+	// Assert
+	require.NoError(t, err)
+	require.Len(t, categories, 2)
+	require.Equal(t, categories[0].ID, categoryID1)
+	require.Equal(t, categories[1].ID, categoryID2)
 }

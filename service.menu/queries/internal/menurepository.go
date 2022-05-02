@@ -259,29 +259,37 @@ func (repo MenuRepository) RemoveCategoryFromMenu(menuID, categoryID uuid.UUID) 
 	return nil
 }
 
-func (repo MenuRepository) GetMenuCategoriesIDs(menuID uuid.UUID) ([]uuid.UUID, error) {
+func (repo MenuRepository) GetCategoriesByIDs(categoriesIDs []uuid.UUID) ([]CategoryView, error) {
 	db, err := sql.Open("postgres", repo.connectionString)
 	if err != nil {
-		return []uuid.UUID{}, err
+		return []CategoryView{}, err
 	}
 	defer db.Close()
 
-	var categoriesIDs []uuid.UUID
+	idListString := makeStringList(categoriesIDs)
 
-	query := `SELECT category_id FROM menus_categories WHERE menu_id=$1`
-	rows, err := db.Query(query, menuID)
+	query := `SELECT * FROM categories WHERE id IN(` + idListString + `)`
+
+	rows, err := db.Query(query)
 	defer rows.Close()
 
+	categories := []CategoryView{}
+
 	for rows.Next() {
-		var categoryID uuid.UUID
-		err = rows.Scan(&categoryID)
+		var categoryView CategoryView
+		err = rows.Scan(
+			&categoryView.ID,
+			&categoryView.Name,
+			&categoryView.ImageURL,
+		)
+
 		if err != nil {
-			log.Fatalf("Unable to scan the row. %v", err)
+			return []CategoryView{}, err
 		}
-		categoriesIDs = append(categoriesIDs, categoryID)
+		categories = append(categories, categoryView)
 	}
 
-	return categoriesIDs, nil
+	return categories, nil
 }
 
 // helpers
@@ -298,4 +306,15 @@ func populateCategoriesIDs(menuView *MenuView, categoriesIDs []uint8) {
 		categoryUUID, _ := uuid.FromString(v)
 		menuView.CategoriesIDs = append(menuView.CategoriesIDs, categoryUUID)
 	}
+}
+
+func makeStringList(categoriesIDs []uuid.UUID) string {
+	idListString := ""
+	for _, v := range categoriesIDs {
+		idListString = idListString + "'" + v.String() + "',"
+	}
+	if len(idListString) > 0 {
+		idListString = strings.TrimSuffix(idListString, ",")
+	}
+	return idListString
 }
