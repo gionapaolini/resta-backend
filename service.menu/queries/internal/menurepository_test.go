@@ -235,3 +235,25 @@ func TestGetCategoriesByIDs(t *testing.T) {
 	require.Equal(t, categories[0].ID, categoryID1)
 	require.Equal(t, categories[1].ID, categoryID2)
 }
+
+func TestChangeCategoryName(t *testing.T) {
+	// Arrange
+	newName := "NewName"
+	viewRepository := NewMenuRepository(pgConnectionString)
+	categoryID, categoryName, imageURL :=
+		utils.GenerateNewUUID(),
+		"TestCategory",
+		"test.com"
+
+	defer viewRepository.DeleteCategory(categoryID)
+	viewRepository.CreateCategory(categoryID, categoryName, imageURL)
+
+	// Act
+	err := viewRepository.ChangeCategoryName(categoryID, newName)
+
+	// Assert
+	require.NoError(t, err)
+	returnedCategory, err := viewRepository.GetCategory(categoryID)
+	require.NoError(t, err)
+	require.Equal(t, newName, returnedCategory.Name)
+}

@@ -20,6 +20,7 @@ type IMenuRepository interface {
 	CreateCategory(categoryID uuid.UUID, categoryName, imageURL string) error
 	AddCategoryToMenu(menuID, categoryID uuid.UUID) error
 	GetCategoriesByIDs(categoriesIDs []uuid.UUID) ([]CategoryView, error)
+	ChangeCategoryName(categoryID uuid.UUID, newName string) error
 }
 
 type MenuRepository struct {
@@ -291,6 +292,21 @@ func (repo MenuRepository) GetCategoriesByIDs(categoriesIDs []uuid.UUID) ([]Cate
 	}
 
 	return categories, nil
+}
+
+func (repo MenuRepository) ChangeCategoryName(categoryID uuid.UUID, newName string) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `UPDATE categories SET name=$2 WHERE id=$1`
+	_, err = db.Exec(query, categoryID, newName)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // helpers

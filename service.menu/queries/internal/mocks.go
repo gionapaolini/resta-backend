@@ -67,3 +67,8 @@ func (m MockMenuRepository) GetCategoriesByIDs(categoriesIDs []uuid.UUID) ([]Cat
 	categoriesViews, _ := args.Get(0).([]CategoryView)
 	return categoriesViews, args.Error(1)
 }
+
+func (m MockMenuRepository) ChangeCategoryName(categoryID uuid.UUID, newName string) error {
+	args := m.Called(categoryID, newName)
+	return args.Error(0)
+}
