@@ -30,6 +30,7 @@ func (api Api) setupRoutes(r *mux.Router) {
 	r.HandleFunc("/menus/{id}/change-name", api.ChangeMenuName).Methods("POST")
 
 	r.HandleFunc("/categories", api.CreateNewCategory).Methods("POST")
+	r.HandleFunc("/categories/{id}/change-name", api.ChangeCategoryName).Methods("POST")
 }
 
 func (api Api) CreateNewMenu(w http.ResponseWriter, r *http.Request) {
@@ -153,4 +154,37 @@ func (api Api) CreateNewCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (api Api) ChangeCategoryName(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := uuid.FromStringOrNil(vars["id"])
+	if id == uuid.Nil {
+		http.Error(w, "Invalid category id", http.StatusBadRequest)
+		return
+	}
+
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	var body map[string]string
+	err := json.Unmarshal(reqBody, &body)
+	if err != nil || body["newName"] == "" {
+		http.Error(w, "newName property is not valid", http.StatusBadRequest)
+		return
+	}
+	category, err := api.repository.GetEntity(entities.EmptyCategory(), id)
+	if err != nil {
+		if errors.Is(err, eventutils.ErrEntityNotFound) {
+			http.Error(w, "Category not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Something went wrong when trying to find the category, please try again later.", http.StatusInternalServerError)
+		}
+		return
+	}
+	category = category.(entities.Category).ChangeName(body["newName"])
+	err = api.repository.SaveEntity(category)
+	if err != nil {
+		http.Error(w, "Something went wrong when saving the changes. Please try again later", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }

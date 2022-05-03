@@ -37,7 +37,7 @@ func TestChangeCategoryName(t *testing.T) {
 
 	// Assert
 	require.Equal(t, newName, category.GetName())
-	require.IsType(t, events.CategoryCreated{}, category.GetLatestEvents()[1])
+	require.IsType(t, events.CategoryNameChanged{}, category.GetLatestEvents()[1])
 }
 
 func Test_DeserializeCategoryEvent(t *testing.T) {

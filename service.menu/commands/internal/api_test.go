@@ -154,3 +154,36 @@ func TestNewCategory(t *testing.T) {
 	require.Equal(t, http.StatusCreated, recorder.Code)
 	mockEntityRepository.AssertExpectations(t)
 }
+
+func TestChangeCategoryName(t *testing.T) {
+	// Arrange
+	menu := entities.NewMenu()
+	category := entities.NewCategory(menu.ID)
+	newName := "NewCategoryName"
+	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository.
+		On("GetEntity", entities.EmptyCategory(), category.ID).
+		Return(category, nil)
+
+	mockEntityRepository.
+		On("SaveEntity", mock.MatchedBy(
+			func(category entities.Category) bool {
+				return category.GetName() == newName
+			},
+		)).
+		Return(nil)
+	router := mux.NewRouter()
+	SetupApi(router, mockEntityRepository)
+	recorder := httptest.NewRecorder()
+	jsonBody := fmt.Sprintf(`{"newName": "%s"}`, newName)
+	url := fmt.Sprintf("/categories/%s/change-name", category.ID)
+	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(jsonBody))
+	require.NoError(t, err)
+
+	// Act
+	router.ServeHTTP(recorder, request)
+
+	// Assert
+	require.Equal(t, http.StatusOK, recorder.Code)
+	mockEntityRepository.AssertExpectations(t)
+}
