@@ -83,3 +83,14 @@ func (menuEventHandler MenuEventHandler) HandleCategoryAddedToMenu(rawEvent *esd
 	err = menuEventHandler.menuRepository.AddCategoryToMenu(event.GetEntityID(), event.CategoryID)
 	return err
 }
+
+func (menuEventHandler MenuEventHandler) HandleCategoryNameChanged(rawEvent *esdb.SubscriptionEvent) error {
+	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
+	var event events.CategoryNameChanged
+	err := json.Unmarshal(rawData, &event)
+	if err != nil {
+		return err
+	}
+	err = menuEventHandler.menuRepository.ChangeCategoryName(event.GetEntityID(), event.NewName)
+	return err
+}

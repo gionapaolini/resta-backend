@@ -38,6 +38,7 @@ func main() {
 	eventHandler.HandleEvent("MenuNameChanged", menuEventHandler.HandleMenuNameChanged)
 	eventHandler.HandleEvent("CategoryCreated", menuEventHandler.HandleCategoryCreated)
 	eventHandler.HandleEvent("CategoryAddedToMenu", menuEventHandler.HandleCategoryAddedToMenu)
+	eventHandler.HandleEvent("CategoryNameChanged", menuEventHandler.HandleCategoryNameChanged)
 	eventHandler.Start()
 	router := mux.NewRouter()
 	internal.SetupApi(router, menuRepository)

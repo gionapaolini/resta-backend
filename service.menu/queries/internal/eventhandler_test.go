@@ -209,3 +209,36 @@ func TestHandleCategoryAddedToMenuMessage(t *testing.T) {
 	// Assert
 	mockMenuRepository.AssertExpectations(t)
 }
+
+func TestHandleCategoryNameChangedMessage(t *testing.T) {
+	// Arrange
+	categoryID := utils.GenerateNewUUID()
+
+	menuEnabledEvent := events.CategoryNameChanged{
+		EntityEventInfo: eventutils.NewEntityEventInfo(categoryID),
+		NewName:         "NewMenuName",
+	}
+
+	incomingMessage := &esdb.SubscriptionEvent{
+		EventAppeared: &esdb.ResolvedEvent{
+			Event: &esdb.RecordedEvent{
+				Data: utils.SerializeObject(menuEnabledEvent),
+			},
+		},
+		SubscriptionDropped: &esdb.SubscriptionDropped{},
+		CheckPointReached:   &esdb.Position{},
+	}
+
+	mockMenuRepository := new(MockMenuRepository)
+	mockMenuRepository.
+		On("ChangeCategoryName", categoryID, menuEnabledEvent.NewName).
+		Return(nil)
+
+	eventHandler := NewMenuEventHandler(mockMenuRepository)
+
+	// Act
+	eventHandler.HandleCategoryNameChanged(incomingMessage)
+
+	// Assert
+	mockMenuRepository.AssertExpectations(t)
+}
