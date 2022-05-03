@@ -16,3 +16,8 @@ type CategoryNameChanged struct {
 	eventutils.EntityEventInfo
 	NewName string
 }
+
+type CategoryImageURLChanged struct {
+	eventutils.EntityEventInfo
+	NewImageURL string
+}
