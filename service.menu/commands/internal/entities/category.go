@@ -48,12 +48,22 @@ func (category Category) GetImageURL() string {
 	return category.State.ImageURL
 }
 
+func (category Category) ChangeName(newName string) Category {
+	event := events.CategoryNameChanged{
+		EntityEventInfo: eventutils.NewEntityEventInfo(category.ID),
+		NewName:         newName,
+	}
+	return eventutils.AddNewEvent(category, event).(Category)
+}
+
 // Events
 func (category Category) ApplyEvent(event eventutils.IEntityEvent) eventutils.IEntity {
 	eventType := utils.GetType(event)
 	switch eventType {
 	case "CategoryCreated":
 		category = category.applyCategoryCreated(event.(events.CategoryCreated))
+	case "CategoryNameChanged":
+		category = category.applyCategoryNameChanged(event.(events.CategoryNameChanged))
 	}
 	return category
 }
@@ -65,11 +75,20 @@ func (category Category) applyCategoryCreated(event events.CategoryCreated) Cate
 	return category
 }
 
+func (category Category) applyCategoryNameChanged(event events.CategoryNameChanged) Category {
+	category.State.Name = event.NewName
+	return category
+}
+
 func (category Category) DeserializeEvent(jsonData []byte) eventutils.IEvent {
 	eventType, rawData := eventutils.GetRawDataFromSerializedEvent(jsonData)
 	switch eventType {
 	case "CategoryCreated":
 		var e events.CategoryCreated
+		json.Unmarshal(rawData, &e)
+		return e
+	case "CategoryNameChanged":
+		var e events.CategoryNameChanged
 		json.Unmarshal(rawData, &e)
 		return e
 	default:

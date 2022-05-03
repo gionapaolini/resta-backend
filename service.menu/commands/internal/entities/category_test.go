@@ -26,3 +26,38 @@ func TestCreateCategory(t *testing.T) {
 	require.Equal(t, category.ID, category.GetLatestEvents()[0].(eventutils.IEntityEvent).GetEntityID())
 	require.False(t, category.IsDeleted)
 }
+
+func TestChangeCategoryName(t *testing.T) {
+	// Arrange
+	menuID := utils.GenerateNewUUID()
+	category := NewCategory(menuID)
+	newName := "New name"
+	// Act
+	category = category.ChangeName(newName)
+
+	// Assert
+	require.Equal(t, newName, category.GetName())
+	require.IsType(t, events.CategoryCreated{}, category.GetLatestEvents()[1])
+}
+
+func Test_DeserializeCategoryEvent(t *testing.T) {
+	// Arrange
+	events := []eventutils.IEvent{
+		events.CategoryCreated{
+			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
+		},
+		events.CategoryNameChanged{
+			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
+		},
+	}
+
+	for _, event := range events {
+		serialized := utils.SerializeObject(event)
+
+		// Act
+		deserialized := EmptyCategory().DeserializeEvent(serialized)
+
+		// Assert
+		require.Equal(t, event, deserialized)
+	}
+}

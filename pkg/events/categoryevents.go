@@ -11,3 +11,8 @@ type CategoryCreated struct {
 	ImageURL     string
 	ParentMenuID uuid.UUID
 }
+
+type CategoryNameChanged struct {
+	eventutils.EntityEventInfo
+	NewName string
+}
