@@ -17,7 +17,7 @@ type IMenuRepository interface {
 	EnableMenu(menuID uuid.UUID) error
 	DisableMenu(menuID uuid.UUID) error
 	ChangeMenuName(menuID uuid.UUID, newName string) error
-	CreateCategory(categoryID uuid.UUID, categoryName, imageURL string) error
+	CreateCategory(categoryID uuid.UUID, categoryName string) error
 	AddCategoryToMenu(menuID, categoryID uuid.UUID) error
 	GetCategoriesByIDs(categoriesIDs []uuid.UUID) ([]CategoryView, error)
 	ChangeCategoryName(categoryID uuid.UUID, newName string) error
@@ -177,15 +177,15 @@ func (repo MenuRepository) ChangeMenuName(menuID uuid.UUID, newName string) erro
 	return nil
 }
 
-func (repo MenuRepository) CreateCategory(categoryID uuid.UUID, categoryName, imageURL string) error {
+func (repo MenuRepository) CreateCategory(categoryID uuid.UUID, categoryName string) error {
 	db, err := sql.Open("postgres", repo.connectionString)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
-	query := `INSERT INTO categories ("id", "name", "image_url") VALUES ($1, $2, $3)`
-	_, err = db.Exec(query, categoryID, categoryName, imageURL)
+	query := `INSERT INTO categories ("id", "name") VALUES ($1, $2)`
+	_, err = db.Exec(query, categoryID, categoryName)
 	if err != nil {
 		return err
 	}
@@ -222,7 +222,6 @@ func (repo MenuRepository) GetCategory(categoryID uuid.UUID) (CategoryView, erro
 	err = row.Scan(
 		&categoryView.ID,
 		&categoryView.Name,
-		&categoryView.ImageURL,
 	)
 
 	if err != nil {
@@ -282,7 +281,6 @@ func (repo MenuRepository) GetCategoriesByIDs(categoriesIDs []uuid.UUID) ([]Cate
 		err = rows.Scan(
 			&categoryView.ID,
 			&categoryView.Name,
-			&categoryView.ImageURL,
 		)
 
 		if err != nil {

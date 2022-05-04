@@ -69,7 +69,7 @@ func (menuEventHandler MenuEventHandler) HandleCategoryCreated(rawEvent *esdb.Su
 	if err != nil {
 		return err
 	}
-	err = menuEventHandler.menuRepository.CreateCategory(event.GetEntityID(), event.Name, event.ImageURL)
+	err = menuEventHandler.menuRepository.CreateCategory(event.GetEntityID(), event.Name)
 	return err
 }
 

@@ -15,8 +15,7 @@ type Category struct {
 	State CategoryState
 }
 type CategoryState struct {
-	Name     string
-	ImageURL string
+	Name string
 }
 
 // Business Logic
@@ -26,7 +25,6 @@ func NewCategory(menuID uuid.UUID) Category {
 	event := events.CategoryCreated{
 		EntityEventInfo: eventutils.NewEntityEventInfo(categoryID),
 		Name:            resources.DefaultCategoryName("en"),
-		ImageURL:        resources.DefaultCategoryImageUrl(),
 		ParentMenuID:    menuID,
 	}
 
@@ -44,22 +42,10 @@ func (category Category) GetName() string {
 	return category.State.Name
 }
 
-func (category Category) GetImageURL() string {
-	return category.State.ImageURL
-}
-
 func (category Category) ChangeName(newName string) Category {
 	event := events.CategoryNameChanged{
 		EntityEventInfo: eventutils.NewEntityEventInfo(category.ID),
 		NewName:         newName,
-	}
-	return eventutils.AddNewEvent(category, event).(Category)
-}
-
-func (category Category) ChangeImageURL(newImageURL string) Category {
-	event := events.CategoryImageURLChanged{
-		EntityEventInfo: eventutils.NewEntityEventInfo(category.ID),
-		NewImageURL:     newImageURL,
 	}
 	return eventutils.AddNewEvent(category, event).(Category)
 }
@@ -72,8 +58,6 @@ func (category Category) ApplyEvent(event eventutils.IEntityEvent) eventutils.IE
 		category = category.applyCategoryCreated(event.(events.CategoryCreated))
 	case "CategoryNameChanged":
 		category = category.applyCategoryNameChanged(event.(events.CategoryNameChanged))
-	case "CategoryImageURLChanged":
-		category = category.applyCategoryImageURLChanged(event.(events.CategoryImageURLChanged))
 	}
 	return category
 }
@@ -81,17 +65,11 @@ func (category Category) ApplyEvent(event eventutils.IEntityEvent) eventutils.IE
 func (category Category) applyCategoryCreated(event events.CategoryCreated) Category {
 	category.ID = event.EntityID
 	category.State.Name = event.Name
-	category.State.ImageURL = event.ImageURL
 	return category
 }
 
 func (category Category) applyCategoryNameChanged(event events.CategoryNameChanged) Category {
 	category.State.Name = event.NewName
-	return category
-}
-
-func (category Category) applyCategoryImageURLChanged(event events.CategoryImageURLChanged) Category {
-	category.State.ImageURL = event.NewImageURL
 	return category
 }
 
@@ -104,10 +82,6 @@ func (category Category) DeserializeEvent(jsonData []byte) eventutils.IEvent {
 		return e
 	case "CategoryNameChanged":
 		var e events.CategoryNameChanged
-		json.Unmarshal(rawData, &e)
-		return e
-	case "CategoryImageURLChanged":
-		var e events.CategoryImageURLChanged
 		json.Unmarshal(rawData, &e)
 		return e
 	default:

@@ -92,14 +92,12 @@ func TestGetCategoriesByIDsApi(t *testing.T) {
 	// Arrange
 	categories := []CategoryView{
 		{
-			ID:       utils.GenerateNewUUID(),
-			Name:     "TestName1",
-			ImageURL: "Jello1",
+			ID:   utils.GenerateNewUUID(),
+			Name: "TestName1",
 		},
 		{
-			ID:       utils.GenerateNewUUID(),
-			Name:     "TestName2",
-			ImageURL: "Jello2",
+			ID:   utils.GenerateNewUUID(),
+			Name: "TestName2",
 		},
 	}
 	mockMenuRepository := new(MockMenuRepository)

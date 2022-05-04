@@ -46,8 +46,8 @@ func (m MockMenuRepository) ChangeMenuName(menuID uuid.UUID, newName string) err
 	return args.Error(0)
 }
 
-func (m MockMenuRepository) CreateCategory(categoryID uuid.UUID, categoryName, imageURL string) error {
-	args := m.Called(categoryID, categoryName, imageURL)
+func (m MockMenuRepository) CreateCategory(categoryID uuid.UUID, categoryName string) error {
+	args := m.Called(categoryID, categoryName)
 	return args.Error(0)
 }
 

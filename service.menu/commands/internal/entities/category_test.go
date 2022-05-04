@@ -17,7 +17,6 @@ func TestCreateCategory(t *testing.T) {
 
 	// Assert
 	require.Equal(t, resources.DefaultCategoryName("en"), category.GetName())
-	require.Equal(t, resources.DefaultCategoryImageUrl(), category.GetImageURL())
 	require.Len(t, category.GetAllEvents(), 1)
 	require.Len(t, category.GetCommittedEvents(), 0)
 	require.Len(t, category.GetLatestEvents(), 1)
@@ -40,19 +39,6 @@ func TestChangeCategoryName(t *testing.T) {
 	require.IsType(t, events.CategoryNameChanged{}, category.GetLatestEvents()[1])
 }
 
-func TestChangeImageURL(t *testing.T) {
-	// Arrange
-	menuID := utils.GenerateNewUUID()
-	category := NewCategory(menuID)
-	newImageURL := "test.com/image.jpg"
-	// Act
-	category = category.ChangeImageURL(newImageURL)
-
-	// Assert
-	require.Equal(t, newImageURL, category.GetImageURL())
-	require.IsType(t, events.CategoryImageURLChanged{}, category.GetLatestEvents()[1])
-}
-
 func Test_DeserializeCategoryEvent(t *testing.T) {
 	// Arrange
 	events := []eventutils.IEvent{
@@ -60,9 +46,6 @@ func Test_DeserializeCategoryEvent(t *testing.T) {
 			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
 		},
 		events.CategoryNameChanged{
-			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
-		},
-		events.CategoryImageURLChanged{
 			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
 		},
 	}

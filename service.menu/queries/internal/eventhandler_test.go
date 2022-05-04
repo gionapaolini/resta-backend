@@ -146,7 +146,6 @@ func TestHandleCategoryCreatedMessage(t *testing.T) {
 	categoryCreatedEvent := events.CategoryCreated{
 		EntityEventInfo: eventutils.NewEntityEventInfo(categoryID),
 		Name:            "TestCategoryName",
-		ImageURL:        "test.com",
 		ParentMenuID:    menuID,
 	}
 
@@ -164,8 +163,7 @@ func TestHandleCategoryCreatedMessage(t *testing.T) {
 	mockMenuRepository.
 		On("CreateCategory",
 			categoryID,
-			categoryCreatedEvent.Name,
-			categoryCreatedEvent.ImageURL).
+			categoryCreatedEvent.Name).
 		Return(nil)
 
 	eventHandler := NewMenuEventHandler(mockMenuRepository)

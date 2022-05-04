@@ -6,8 +6,7 @@ CREATE TABLE IF NOT EXISTS menus (
 
 CREATE TABLE IF NOT EXISTS categories (
    id uuid PRIMARY KEY,
-   name VARCHAR (50) NOT NULL,
-   image_url VARCHAR (150) NOT NULL
+   name VARCHAR (50) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS menus_categories (

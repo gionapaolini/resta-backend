@@ -119,14 +119,14 @@ func TestChangeMenuName(t *testing.T) {
 
 func TestCreateCategory(t *testing.T) {
 	// Arrange
-	categoryID, categoryName, imageURL :=
-		utils.GenerateNewUUID(), "TestCategory", "test.com"
+	categoryID, categoryName :=
+		utils.GenerateNewUUID(), "TestCategory"
 
 	viewRepository := NewMenuRepository(pgConnectionString)
 	defer viewRepository.DeleteCategory(categoryID)
 
 	// Act
-	err := viewRepository.CreateCategory(categoryID, categoryName, imageURL)
+	err := viewRepository.CreateCategory(categoryID, categoryName)
 
 	// Assert
 	require.NoError(t, err)
@@ -134,24 +134,22 @@ func TestCreateCategory(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, categoryID, returnedCategory.ID)
 	require.Equal(t, categoryName, returnedCategory.Name)
-	require.Equal(t, imageURL, returnedCategory.ImageURL)
 }
 
 func TestAddCategoryToMenu(t *testing.T) {
 	// Arrange
 	viewRepository := NewMenuRepository(pgConnectionString)
-	menuID, menuName, categoryID, categoryName, imageURL :=
+	menuID, menuName, categoryID, categoryName :=
 		utils.GenerateNewUUID(),
 		"TestMenu",
 		utils.GenerateNewUUID(),
-		"TestCategory",
-		"test.com"
+		"TestCategory"
 
 	defer viewRepository.DeleteCategory(categoryID)
 	defer viewRepository.RemoveCategoryFromMenu(menuID, categoryID)
 	defer viewRepository.DeleteMenu(menuID)
 	viewRepository.CreateMenu(menuID, menuName)
-	viewRepository.CreateCategory(categoryID, categoryName, imageURL)
+	viewRepository.CreateCategory(categoryID, categoryName)
 
 	// Act
 	err := viewRepository.AddCategoryToMenu(menuID, categoryID)
@@ -167,13 +165,12 @@ func TestAddCategoryToMenu(t *testing.T) {
 func TestGetMenu_ShouldHaveCategoriesIDPopulated(t *testing.T) {
 	// Arrange
 	viewRepository := NewMenuRepository(pgConnectionString)
-	menuID, menuName, categoryID1, categoryID2, categoryName, imageURL :=
+	menuID, menuName, categoryID1, categoryID2, categoryName :=
 		utils.GenerateNewUUID(),
 		"TestMenu",
 		utils.GenerateNewUUID(),
 		utils.GenerateNewUUID(),
-		"TestCategory",
-		"test.com"
+		"TestCategory"
 
 	defer viewRepository.DeleteCategory(categoryID1)
 	defer viewRepository.DeleteCategory(categoryID2)
@@ -181,8 +178,8 @@ func TestGetMenu_ShouldHaveCategoriesIDPopulated(t *testing.T) {
 	defer viewRepository.RemoveCategoryFromMenu(menuID, categoryID2)
 	defer viewRepository.DeleteMenu(menuID)
 	viewRepository.CreateMenu(menuID, menuName)
-	viewRepository.CreateCategory(categoryID1, categoryName, imageURL)
-	viewRepository.CreateCategory(categoryID2, categoryName, imageURL)
+	viewRepository.CreateCategory(categoryID1, categoryName)
+	viewRepository.CreateCategory(categoryID2, categoryName)
 	viewRepository.AddCategoryToMenu(menuID, categoryID1)
 	viewRepository.AddCategoryToMenu(menuID, categoryID2)
 
@@ -215,16 +212,15 @@ func TestGetMenu_WhenNoCategory_ShouldHaveEmptyCategoryList(t *testing.T) {
 func TestGetCategoriesByIDs(t *testing.T) {
 	// Arrange
 	viewRepository := NewMenuRepository(pgConnectionString)
-	categoryID1, categoryID2, categoryName, imageURL :=
+	categoryID1, categoryID2, categoryName :=
 		utils.GenerateNewUUID(),
 		utils.GenerateNewUUID(),
-		"TestCategory",
-		"test.com"
+		"TestCategory"
 
 	defer viewRepository.DeleteCategory(categoryID1)
 	defer viewRepository.DeleteCategory(categoryID2)
-	viewRepository.CreateCategory(categoryID1, categoryName, imageURL)
-	viewRepository.CreateCategory(categoryID2, categoryName, imageURL)
+	viewRepository.CreateCategory(categoryID1, categoryName)
+	viewRepository.CreateCategory(categoryID2, categoryName)
 
 	// Act
 	categories, err := viewRepository.GetCategoriesByIDs([]uuid.UUID{categoryID1, categoryID2})
@@ -240,13 +236,12 @@ func TestChangeCategoryName(t *testing.T) {
 	// Arrange
 	newName := "NewName"
 	viewRepository := NewMenuRepository(pgConnectionString)
-	categoryID, categoryName, imageURL :=
+	categoryID, categoryName :=
 		utils.GenerateNewUUID(),
-		"TestCategory",
-		"test.com"
+		"TestCategory"
 
 	defer viewRepository.DeleteCategory(categoryID)
-	viewRepository.CreateCategory(categoryID, categoryName, imageURL)
+	viewRepository.CreateCategory(categoryID, categoryName)
 
 	// Act
 	err := viewRepository.ChangeCategoryName(categoryID, newName)
