@@ -33,7 +33,7 @@ func main() {
 	eventHandler.Start()
 
 	router := mux.NewRouter()
-	internal.SetupApi(router, entityRepository)
+	internal.SetupApiOLD(router, entityRepository)
 
 	http.Handle("/", router)
 	log.Fatal(http.ListenAndServe(":10000", nil))

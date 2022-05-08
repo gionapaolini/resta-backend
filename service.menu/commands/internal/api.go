@@ -8,6 +8,7 @@ import (
 
 	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
+	"github.com/gofiber/fiber/v2"
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
 )
@@ -16,15 +17,32 @@ type Api struct {
 	repository eventutils.IEntityRepository
 }
 
-func SetupApi(router *mux.Router, repo eventutils.IEntityRepository) {
+func SetupApiOLD(router *mux.Router, repo eventutils.IEntityRepository) {
 	api := Api{
 		repository: repo,
 	}
-	api.setupRoutes(router)
+	api.setupRoutesOLD(router)
 }
 
-func (api Api) setupRoutes(r *mux.Router) {
-	r.HandleFunc("/menus", api.CreateNewMenu).Methods("POST")
+func SetupApi(app *fiber.App, repo eventutils.IEntityRepository) {
+	api := Api{
+		repository: repo,
+	}
+	api.setupRoutes(app)
+}
+
+func (api Api) setupRoutes(app *fiber.App) {
+	app.Post("/menus", api.CreateNewMenu)
+	// app.Post("/menus/{id}/enable", api.EnableMenu)
+	// app.Post("/menus/{id}/disable", api.DisableMenu)
+	// app.Post("/menus/{id}/change-name", api.ChangeMenuName)
+
+	// app.Post("/categories", api.CreateNewCategory)
+	// app.Post("/categories/{id}/change-name", api.ChangeCategoryName)
+}
+
+func (api Api) setupRoutesOLD(r *mux.Router) {
+	// r.HandleFunc("/menus", api.CreateNewMenu).Methods("POST")
 	r.HandleFunc("/menus/{id}/enable", api.EnableMenu).Methods("POST")
 	r.HandleFunc("/menus/{id}/disable", api.DisableMenu).Methods("POST")
 	r.HandleFunc("/menus/{id}/change-name", api.ChangeMenuName).Methods("POST")
@@ -33,14 +51,14 @@ func (api Api) setupRoutes(r *mux.Router) {
 	r.HandleFunc("/categories/{id}/change-name", api.ChangeCategoryName).Methods("POST")
 }
 
-func (api Api) CreateNewMenu(w http.ResponseWriter, r *http.Request) {
+func (api Api) CreateNewMenu(c *fiber.Ctx) error {
 	menu := entities.NewMenu()
 	err := api.repository.SaveEntity(menu)
 	if err != nil {
-		http.Error(w, "Something went wrong when saving the new menu. Please try again later", http.StatusInternalServerError)
-		return
+		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the new menu. Please try again later")
 	}
-	w.WriteHeader(http.StatusCreated)
+	c.SendStatus(fiber.StatusCreated)
+	return nil
 }
 
 func (api Api) EnableMenu(w http.ResponseWriter, r *http.Request) {

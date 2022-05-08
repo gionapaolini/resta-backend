@@ -9,6 +9,7 @@ import (
 
 	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
+	"github.com/gofiber/fiber/v2"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -20,19 +21,20 @@ func TestCreateNewMenu(t *testing.T) {
 	mockEntityRepository.
 		On("SaveEntity", mock.AnythingOfType("entities.Menu")).
 		Return(nil)
-	router := mux.NewRouter()
-	SetupApi(router, mockEntityRepository)
-	recorder := httptest.NewRecorder()
+
+	app := fiber.New()
+
+	SetupApi(app, mockEntityRepository)
 
 	url := "/menus"
 	request, err := http.NewRequest(http.MethodPost, url, nil)
 	require.NoError(t, err)
 
 	// Act
-	router.ServeHTTP(recorder, request)
+	resp, _ := app.Test(request)
 
 	// Assert
-	require.Equal(t, http.StatusCreated, recorder.Code)
+	require.Equal(t, fiber.StatusCreated, resp.StatusCode)
 }
 
 func TestEnableMenu(t *testing.T) {
@@ -51,7 +53,7 @@ func TestEnableMenu(t *testing.T) {
 		)).
 		Return(nil)
 	router := mux.NewRouter()
-	SetupApi(router, mockEntityRepository)
+	SetupApiOLD(router, mockEntityRepository)
 	recorder := httptest.NewRecorder()
 
 	url := fmt.Sprintf("/menus/%s/enable", menu.ID)
@@ -82,7 +84,7 @@ func TestDisableMenu(t *testing.T) {
 		)).
 		Return(nil)
 	router := mux.NewRouter()
-	SetupApi(router, mockEntityRepository)
+	SetupApiOLD(router, mockEntityRepository)
 	recorder := httptest.NewRecorder()
 
 	url := fmt.Sprintf("/menus/%s/disable", menu.ID)
@@ -113,7 +115,7 @@ func TestChangeMenuName(t *testing.T) {
 		)).
 		Return(nil)
 	router := mux.NewRouter()
-	SetupApi(router, mockEntityRepository)
+	SetupApiOLD(router, mockEntityRepository)
 	recorder := httptest.NewRecorder()
 	jsonBody := `{"newName": "NewMenuName"}`
 	url := fmt.Sprintf("/menus/%s/change-name", menu.ID)
@@ -140,7 +142,7 @@ func TestNewCategory(t *testing.T) {
 		On("SaveEntity", mock.AnythingOfType("Category")).
 		Return(nil)
 	router := mux.NewRouter()
-	SetupApi(router, mockEntityRepository)
+	SetupApiOLD(router, mockEntityRepository)
 	recorder := httptest.NewRecorder()
 	jsonBody := fmt.Sprintf(`{"menuID": "%s"}`, menu.ID)
 	url := "/categories"
@@ -173,7 +175,7 @@ func TestChangeCategoryName(t *testing.T) {
 		)).
 		Return(nil)
 	router := mux.NewRouter()
-	SetupApi(router, mockEntityRepository)
+	SetupApiOLD(router, mockEntityRepository)
 	recorder := httptest.NewRecorder()
 	jsonBody := fmt.Sprintf(`{"newName": "%s"}`, newName)
 	url := fmt.Sprintf("/categories/%s/change-name", category.ID)
