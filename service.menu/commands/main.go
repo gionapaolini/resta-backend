@@ -1,15 +1,12 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/Resta-Inc/resta/menu/commands/internal"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/benbjohnson/clock"
-	"github.com/gorilla/mux"
+	"github.com/gofiber/fiber/v2"
 )
 
 const eventStoreConnectionString = "esdb://127.0.0.1:2113?tls=false&keepAliveTimeout=10000&keepAliveInterval=10000"
@@ -32,9 +29,8 @@ func main() {
 	eventHandler.HandleEvent("CategoryCreated", menuEventHandler.HandleCategoryCreated)
 	eventHandler.Start()
 
-	router := mux.NewRouter()
-	internal.SetupApiOLD(router, entityRepository)
+	app := fiber.New()
+	internal.SetupApi(app, entityRepository)
 
-	http.Handle("/", router)
-	log.Fatal(http.ListenAndServe(":10000", nil))
+	app.Listen(":10000")
 }

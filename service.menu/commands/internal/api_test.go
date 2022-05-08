@@ -3,14 +3,12 @@ package internal
 import (
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -23,7 +21,6 @@ func TestCreateNewMenu(t *testing.T) {
 		Return(nil)
 
 	app := fiber.New()
-
 	SetupApi(app, mockEntityRepository)
 
 	url := "/menus"
@@ -52,19 +49,19 @@ func TestEnableMenu(t *testing.T) {
 			},
 		)).
 		Return(nil)
-	router := mux.NewRouter()
-	SetupApiOLD(router, mockEntityRepository)
-	recorder := httptest.NewRecorder()
+
+	app := fiber.New()
+	SetupApi(app, mockEntityRepository)
 
 	url := fmt.Sprintf("/menus/%s/enable", menu.ID)
 	request, err := http.NewRequest(http.MethodPost, url, nil)
 	require.NoError(t, err)
 
 	// Act
-	router.ServeHTTP(recorder, request)
+	resp, _ := app.Test(request)
 
 	// Assert
-	require.Equal(t, http.StatusOK, recorder.Code)
+	require.Equal(t, fiber.StatusOK, resp.StatusCode)
 	mockEntityRepository.AssertExpectations(t)
 }
 
@@ -83,19 +80,19 @@ func TestDisableMenu(t *testing.T) {
 			},
 		)).
 		Return(nil)
-	router := mux.NewRouter()
-	SetupApiOLD(router, mockEntityRepository)
-	recorder := httptest.NewRecorder()
+
+	app := fiber.New()
+	SetupApi(app, mockEntityRepository)
 
 	url := fmt.Sprintf("/menus/%s/disable", menu.ID)
 	request, err := http.NewRequest(http.MethodPost, url, nil)
 	require.NoError(t, err)
 
 	// Act
-	router.ServeHTTP(recorder, request)
+	resp, _ := app.Test(request)
 
 	// Assert
-	require.Equal(t, http.StatusOK, recorder.Code)
+	require.Equal(t, fiber.StatusOK, resp.StatusCode)
 	mockEntityRepository.AssertExpectations(t)
 }
 
@@ -114,19 +111,21 @@ func TestChangeMenuName(t *testing.T) {
 			},
 		)).
 		Return(nil)
-	router := mux.NewRouter()
-	SetupApiOLD(router, mockEntityRepository)
-	recorder := httptest.NewRecorder()
+
+	app := fiber.New()
+	SetupApi(app, mockEntityRepository)
+
 	jsonBody := `{"newName": "NewMenuName"}`
 	url := fmt.Sprintf("/menus/%s/change-name", menu.ID)
 	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(jsonBody))
+	request.Header.Add("content-type", "application/json")
 	require.NoError(t, err)
 
 	// Act
-	router.ServeHTTP(recorder, request)
+	resp, _ := app.Test(request)
 
 	// Assert
-	require.Equal(t, http.StatusOK, recorder.Code)
+	require.Equal(t, fiber.StatusOK, resp.StatusCode)
 	mockEntityRepository.AssertExpectations(t)
 }
 
@@ -141,19 +140,21 @@ func TestNewCategory(t *testing.T) {
 	mockEntityRepository.
 		On("SaveEntity", mock.AnythingOfType("Category")).
 		Return(nil)
-	router := mux.NewRouter()
-	SetupApiOLD(router, mockEntityRepository)
-	recorder := httptest.NewRecorder()
+
+	app := fiber.New()
+	SetupApi(app, mockEntityRepository)
+
 	jsonBody := fmt.Sprintf(`{"menuID": "%s"}`, menu.ID)
 	url := "/categories"
 	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(jsonBody))
+	request.Header.Add("content-type", "application/json")
 	require.NoError(t, err)
 
 	// Act
-	router.ServeHTTP(recorder, request)
+	resp, _ := app.Test(request)
 
 	// Assert
-	require.Equal(t, http.StatusCreated, recorder.Code)
+	require.Equal(t, fiber.StatusCreated, resp.StatusCode)
 	mockEntityRepository.AssertExpectations(t)
 }
 
@@ -174,18 +175,20 @@ func TestChangeCategoryName(t *testing.T) {
 			},
 		)).
 		Return(nil)
-	router := mux.NewRouter()
-	SetupApiOLD(router, mockEntityRepository)
-	recorder := httptest.NewRecorder()
+
+	app := fiber.New()
+	SetupApi(app, mockEntityRepository)
+
 	jsonBody := fmt.Sprintf(`{"newName": "%s"}`, newName)
 	url := fmt.Sprintf("/categories/%s/change-name", category.ID)
 	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(jsonBody))
+	request.Header.Add("content-type", "application/json")
 	require.NoError(t, err)
 
 	// Act
-	router.ServeHTTP(recorder, request)
+	resp, _ := app.Test(request)
 
 	// Assert
-	require.Equal(t, http.StatusOK, recorder.Code)
+	require.Equal(t, fiber.StatusOK, resp.StatusCode)
 	mockEntityRepository.AssertExpectations(t)
 }

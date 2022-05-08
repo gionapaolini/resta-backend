@@ -8,7 +8,6 @@ require (
 	github.com/Resta-Inc/resta v0.0.0
 	github.com/benbjohnson/clock v1.3.0
 	github.com/gofiber/fiber/v2 v2.33.0
-	github.com/gorilla/mux v1.8.0
 	github.com/stretchr/testify v1.7.1
 )
 
