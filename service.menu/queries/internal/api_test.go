@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/Resta-Inc/resta/pkg/utils"
+	"github.com/gofiber/fiber/v2"
 	"github.com/gofrs/uuid"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,21 +24,20 @@ func TestGetMenu(t *testing.T) {
 		On("GetMenu", menu.ID).
 		Return(menu, nil)
 
-	router := mux.NewRouter()
-	SetupApi(router, mockMenuRepository)
-	recorder := httptest.NewRecorder()
+	app := fiber.New()
+	SetupApi(app, mockMenuRepository)
 
 	url := fmt.Sprintf("/menus/%s", menu.ID)
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	require.NoError(t, err)
 
 	// Act
-	router.ServeHTTP(recorder, request)
+	resp, _ := app.Test(request)
 
 	// Assert
-	require.Equal(t, http.StatusOK, recorder.Code)
+	require.Equal(t, fiber.StatusOK, resp.StatusCode)
 
-	response, err := ioutil.ReadAll(recorder.Body)
+	response, err := ioutil.ReadAll(resp.Body)
 	require.NoError(t, err)
 
 	var menuResponse MenuView
@@ -65,21 +63,20 @@ func TestGetMenus(t *testing.T) {
 		On("GetAllMenus").
 		Return(menus, nil)
 
-	router := mux.NewRouter()
-	SetupApi(router, mockMenuRepository)
-	recorder := httptest.NewRecorder()
+	app := fiber.New()
+	SetupApi(app, mockMenuRepository)
 
 	url := "/menus"
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	require.NoError(t, err)
 
 	// Act
-	router.ServeHTTP(recorder, request)
+	resp, _ := app.Test(request)
 
 	// Assert
-	require.Equal(t, http.StatusOK, recorder.Code)
+	require.Equal(t, fiber.StatusOK, resp.StatusCode)
 
-	response, err := ioutil.ReadAll(recorder.Body)
+	response, err := ioutil.ReadAll(resp.Body)
 	require.NoError(t, err)
 
 	var menuResponse []MenuView
@@ -108,21 +105,20 @@ func TestGetCategoriesByIDsApi(t *testing.T) {
 		}).
 		Return(categories, nil)
 
-	router := mux.NewRouter()
-	SetupApi(router, mockMenuRepository)
-	recorder := httptest.NewRecorder()
+	app := fiber.New()
+	SetupApi(app, mockMenuRepository)
 
 	url := fmt.Sprintf("/categories/by-ids?id=%s,%s", categories[0].ID, categories[1].ID)
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	require.NoError(t, err)
 
 	// Act
-	router.ServeHTTP(recorder, request)
+	resp, _ := app.Test(request)
 
 	// Assert
-	require.Equal(t, http.StatusOK, recorder.Code)
+	require.Equal(t, fiber.StatusOK, resp.StatusCode)
 
-	response, err := ioutil.ReadAll(recorder.Body)
+	response, err := ioutil.ReadAll(resp.Body)
 	require.NoError(t, err)
 
 	var categoriesResponse []CategoryView

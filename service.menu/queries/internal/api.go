@@ -2,11 +2,10 @@ package internal
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
 )
@@ -16,63 +15,57 @@ type Api struct {
 	Router         *mux.Router
 }
 
-func SetupApi(router *mux.Router, repo IMenuRepository) {
+func SetupApi(app *fiber.App, repo IMenuRepository) {
 	api := Api{
 		menuRepository: repo,
 	}
-	api.setupRoutes(router)
+	api.setupRoutes(app)
 }
 
-func (api Api) setupRoutes(r *mux.Router) {
-	r.HandleFunc("/menus/{id}", api.GetMenu)
-	r.HandleFunc("/menus", api.GetAllMenus)
-	r.HandleFunc("/categories/by-ids", api.GetCategoriesByIDs)
+func (api Api) setupRoutes(app *fiber.App) {
+	app.Get("/menus/:id", api.GetMenu)
+	app.Get("/menus", api.GetAllMenus)
+	app.Get("/categories/by-ids", api.GetCategoriesByIDs)
 }
 
-func (api Api) GetMenu(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := uuid.FromStringOrNil(vars["id"])
+func (api Api) GetMenu(c *fiber.Ctx) error {
+	id := uuid.FromStringOrNil(c.Params("id"))
 	if id == uuid.Nil {
-		http.Error(w, "invalid menu id", http.StatusBadRequest)
-		return
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid menu id")
 	}
 	menu, err := api.menuRepository.GetMenu(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			http.Error(w, "Menu not found", http.StatusNotFound)
+			return fiber.NewError(fiber.StatusNotFound, "Menu not found")
 		} else {
-			http.Error(w, "Something went wrong when trying to find the menu, please try again later.", http.StatusInternalServerError)
+			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the menu, please try again later.")
 		}
-		return
 	}
-	json.NewEncoder(w).Encode(menu)
+	return c.JSON(menu)
 }
 
-func (api Api) GetAllMenus(w http.ResponseWriter, r *http.Request) {
-	menu, err := api.menuRepository.GetAllMenus()
+func (api Api) GetAllMenus(c *fiber.Ctx) error {
+	menus, err := api.menuRepository.GetAllMenus()
 	if err != nil {
-		http.Error(w, "Something went wrong when trying to find the menus, please try again later.", http.StatusInternalServerError)
-		return
+		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the menus, please try again later.")
 	}
-	json.NewEncoder(w).Encode(menu)
+	return c.JSON(menus)
 }
 
-func (api Api) GetCategoriesByIDs(w http.ResponseWriter, r *http.Request) {
-	ids := r.URL.Query().Get("id")
+func (api Api) GetCategoriesByIDs(c *fiber.Ctx) error {
+	ids := c.Query("id")
 	uuids := []uuid.UUID{}
 	for _, v := range strings.Split(ids, ",") {
 		parsedID := uuid.FromStringOrNil(v)
 		if parsedID == uuid.Nil {
 			fmtError := fmt.Sprintf("invalid category id: %s", v)
-			http.Error(w, fmtError, http.StatusBadRequest)
-			return
+			return fiber.NewError(fiber.StatusBadRequest, fmtError)
 		}
 		uuids = append(uuids, parsedID)
 	}
 	categories, err := api.menuRepository.GetCategoriesByIDs(uuids)
 	if err != nil {
-		http.Error(w, "Something went wrong when trying to find the categories, please try again later.", http.StatusInternalServerError)
-		return
+		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the categories, please try again later.")
 	}
-	json.NewEncoder(w).Encode(categories)
+	return c.JSON(categories)
 }

@@ -2,15 +2,13 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net/http"
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/Resta-Inc/resta/menu/queries/internal"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/benbjohnson/clock"
-	"github.com/gorilla/mux"
+	"github.com/gofiber/fiber/v2"
 )
 
 const (
@@ -40,8 +38,9 @@ func main() {
 	eventHandler.HandleEvent("CategoryAddedToMenu", menuEventHandler.HandleCategoryAddedToMenu)
 	eventHandler.HandleEvent("CategoryNameChanged", menuEventHandler.HandleCategoryNameChanged)
 	eventHandler.Start()
-	router := mux.NewRouter()
-	internal.SetupApi(router, menuRepository)
-	http.Handle("/", router)
-	log.Fatal(http.ListenAndServe(":10001", nil))
+
+	app := fiber.New()
+	internal.SetupApi(app, menuRepository)
+
+	app.Listen(":10001")
 }
