@@ -34,6 +34,8 @@ func (api Api) setupRoutes(app *fiber.App) {
 	app.Post("/categories", api.CreateNewCategory)
 	app.Post("/categories/:id/change-name", api.ChangeCategoryName)
 	app.Post("/categories/:id/upload-image", api.UploadCategoryImage)
+
+	app.Post("/subcategories", api.CreateNewSubCategory)
 }
 
 func (api Api) CreateNewMenu(c *fiber.Ctx) error {
@@ -215,6 +217,39 @@ func (api Api) UploadCategoryImage(c *fiber.Ctx) error {
 	}
 
 	c.SendStatus(fiber.StatusOK)
+	return nil
+}
+
+type CreateNewSubCategoryRequest struct {
+	CategoryID string `json:"categoryID"`
+}
+
+func (api Api) CreateNewSubCategory(c *fiber.Ctx) error {
+	reqBody := new(CreateNewSubCategoryRequest)
+	if err := c.BodyParser(reqBody); err != nil {
+		return err
+	}
+	categoryID := uuid.FromStringOrNil(reqBody.CategoryID)
+	if categoryID == uuid.Nil {
+		return fiber.NewError(fiber.StatusBadRequest, "categoryID is not valid")
+	}
+	category, err := api.repository.GetEntity(entities.EmptyCategory(), categoryID)
+	if err != nil {
+		if errors.Is(err, eventutils.ErrEntityNotFound) {
+			return fiber.NewError(fiber.StatusNotFound, "Category not found")
+		} else {
+			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the category, please try again later.")
+		}
+	}
+	if category.(entities.Category).IsDeleted {
+		return fiber.NewError(fiber.StatusNotFound, "Category not found")
+	}
+	subcategory := entities.NewSubCategory(categoryID)
+	err = api.repository.SaveEntity(subcategory)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the changes. Please try again later")
+	}
+	c.SendStatus(fiber.StatusCreated)
 	return nil
 }
 

@@ -31,12 +31,26 @@ func TestChangeCategoryName(t *testing.T) {
 	menuID := utils.GenerateNewUUID()
 	category := NewCategory(menuID)
 	newName := "New name"
+
 	// Act
 	category = category.ChangeName(newName)
 
 	// Assert
 	require.Equal(t, newName, category.GetName())
 	require.IsType(t, events.CategoryNameChanged{}, category.GetLatestEvents()[1])
+}
+
+func Test_AddSubCategory(t *testing.T) {
+	// Arrange
+	subCategoryID := utils.GenerateNewUUID()
+	category := NewCategory(utils.GenerateNewUUID())
+
+	// Act
+	category = category.AddSubCategory(subCategoryID)
+
+	// Assert
+	require.Contains(t, category.GetSubCategoriesIDs(), subCategoryID)
+	require.IsType(t, events.SubCategoryAddedToCategory{}, category.GetLatestEvents()[1])
 }
 
 func Test_DeserializeCategoryEvent(t *testing.T) {

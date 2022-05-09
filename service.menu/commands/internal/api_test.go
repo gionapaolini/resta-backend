@@ -13,6 +13,7 @@ import (
 
 	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
+	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -239,4 +240,33 @@ func TestUploadCategoryPicture(t *testing.T) {
 	path := filepath.Join("./resources", "images/categories", imageName)
 	_, err = os.Stat(path)
 	require.NoError(t, err)
+}
+
+func TestNewSubCategory(t *testing.T) {
+	// Arrange
+	category := entities.NewCategory(utils.GenerateNewUUID())
+	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository.
+		On("GetEntity", entities.EmptyCategory(), category.ID).
+		Return(category, nil)
+
+	mockEntityRepository.
+		On("SaveEntity", mock.AnythingOfType("SubCategory")).
+		Return(nil)
+
+	app := fiber.New()
+	SetupApi(app, mockEntityRepository, "")
+
+	jsonBody := fmt.Sprintf(`{"categoryID": "%s"}`, category.ID)
+	url := "/subcategories"
+	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(jsonBody))
+	request.Header.Add("content-type", "application/json")
+	require.NoError(t, err)
+
+	// Act
+	resp, _ := app.Test(request)
+
+	// Assert
+	require.Equal(t, fiber.StatusCreated, resp.StatusCode)
+	mockEntityRepository.AssertExpectations(t)
 }
