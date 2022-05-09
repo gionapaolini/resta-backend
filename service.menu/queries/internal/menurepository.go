@@ -307,6 +307,59 @@ func (repo MenuRepository) ChangeCategoryName(categoryID uuid.UUID, newName stri
 	return nil
 }
 
+func (repo MenuRepository) CreateSubCategory(subCategoryID uuid.UUID, subCategoryName string) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `INSERT INTO subcategories ("id", "name") VALUES ($1, $2)`
+	_, err = db.Exec(query, subCategoryID, subCategoryName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo MenuRepository) DeleteSubCategory(subCategoryID uuid.UUID) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `DELETE FROM subcategories WHERE id=$1`
+	_, err = db.Exec(query, subCategoryID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo MenuRepository) GetSubCategory(subCategoryID uuid.UUID) (SubCategoryView, error) {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return SubCategoryView{}, err
+	}
+	defer db.Close()
+
+	var subCategoryView SubCategoryView
+
+	query := `SELECT * FROM subcategories WHERE id=$1`
+	row := db.QueryRow(query, subCategoryID)
+
+	err = row.Scan(
+		&subCategoryView.ID,
+		&subCategoryView.Name,
+	)
+
+	if err != nil {
+		return SubCategoryView{}, err
+	}
+	return subCategoryView, nil
+}
+
 // helpers
 func populateCategoriesIDs(menuView *MenuView, categoriesIDs []uint8) {
 	categoriesIDsString := string(categoriesIDs)

@@ -16,3 +16,16 @@ CREATE TABLE IF NOT EXISTS menus_categories (
    FOREIGN KEY(menu_id) REFERENCES menus(id),
    FOREIGN KEY(category_id) REFERENCES categories(id)
 );
+
+CREATE TABLE IF NOT EXISTS subcategories (
+   id uuid PRIMARY KEY,
+   name VARCHAR (50) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS category_subcategories (
+   category_id uuid NOT NULL,
+   subcategory_id uuid NOT NULL UNIQUE,
+   PRIMARY KEY(category_id, subcategory_id),
+   FOREIGN KEY(category_id) REFERENCES categories(id),
+   FOREIGN KEY(subcategory_id) REFERENCES subcategories(id)
+);

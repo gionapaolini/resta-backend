@@ -14,3 +14,9 @@ type CategoryView struct {
 	Name     string    `json:"name"`
 	ImageURL string    `json:"imageURL"`
 }
+
+type SubCategoryView struct {
+	ID       uuid.UUID `json:"id"`
+	Name     string    `json:"name"`
+	ImageURL string    `json:"imageURL"`
+}

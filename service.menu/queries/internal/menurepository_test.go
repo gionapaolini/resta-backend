@@ -252,3 +252,22 @@ func TestChangeCategoryName(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, newName, returnedCategory.Name)
 }
+
+func TestCreateSubCategory(t *testing.T) {
+	// Arrange
+	subCategoryID, subCategoryName :=
+		utils.GenerateNewUUID(), "TestSubCategory"
+
+	viewRepository := NewMenuRepository(pgConnectionString)
+	defer viewRepository.DeleteSubCategory(subCategoryID)
+
+	// Act
+	err := viewRepository.CreateSubCategory(subCategoryID, subCategoryName)
+
+	// Assert
+	require.NoError(t, err)
+	returnedSubCategory, err := viewRepository.GetSubCategory(subCategoryID)
+	require.NoError(t, err)
+	require.Equal(t, subCategoryID, returnedSubCategory.ID)
+	require.Equal(t, subCategoryName, returnedSubCategory.Name)
+}
