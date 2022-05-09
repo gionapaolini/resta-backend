@@ -15,3 +15,14 @@ type CategoryNameChanged struct {
 	eventutils.EntityEventInfo
 	NewName string
 }
+
+type SubCategoryCreated struct {
+	eventutils.EntityEventInfo
+	Name             string
+	ParentCategoryID uuid.UUID
+}
+
+type SubCategoryNameChanged struct {
+	eventutils.EntityEventInfo
+	NewName string
+}

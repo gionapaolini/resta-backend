@@ -8,6 +8,6 @@ func DefaultCategoryName(lang string) string {
 	return "Untitled Category"
 }
 
-func DefaultCategoryImageUrl() string {
-	return "https://resta.dev/resources/default-category-image.jpeg"
+func DefaultSubCategoryName(lang string) string {
+	return "Untitled Sub-Category"
 }
