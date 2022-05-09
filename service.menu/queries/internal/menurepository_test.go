@@ -55,7 +55,7 @@ func TestGetAllMenus(t *testing.T) {
 
 	// Assert
 	require.NoError(t, err)
-	require.Len(t, menus, 3)
+	require.True(t, len(menus) >= 3) //there might already be menus since we use the same DB
 }
 
 func TestEnableMenu(t *testing.T) {
