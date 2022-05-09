@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/Resta-Inc/resta/menu/commands/internal"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
@@ -12,6 +14,12 @@ import (
 const eventStoreConnectionString = "esdb://127.0.0.1:2113?tls=false&keepAliveTimeout=10000&keepAliveInterval=10000"
 
 func main() {
+	// TODO: FIX THIS IN A PROPER WAY
+	os.Setenv("RESOURCE_FOLDER", "../../resources")
+	err := os.MkdirAll("../../resources/images/categories", 0755)
+	if err != nil {
+		panic(err)
+	}
 	utils.Time = clock.New()
 
 	settings, _ := esdb.ParseConnectionString(eventStoreConnectionString)

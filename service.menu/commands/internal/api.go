@@ -2,6 +2,10 @@ package internal
 
 import (
 	"errors"
+	"fmt"
+	"mime/multipart"
+	"os"
+	"path/filepath"
 
 	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
@@ -28,6 +32,7 @@ func (api Api) setupRoutes(app *fiber.App) {
 
 	app.Post("/categories", api.CreateNewCategory)
 	app.Post("/categories/:id/change-name", api.ChangeCategoryName)
+	app.Post("/categories/:id/upload-image", api.UploadCategoryImage)
 }
 
 func (api Api) CreateNewMenu(c *fiber.Ctx) error {
@@ -179,4 +184,43 @@ func (api Api) ChangeCategoryName(c *fiber.Ctx) error {
 	}
 	c.SendStatus(fiber.StatusOK)
 	return nil
+}
+
+func (api Api) UploadCategoryImage(c *fiber.Ctx) error {
+	id := uuid.FromStringOrNil(c.Params("id"))
+	if id == uuid.Nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid category id")
+	}
+
+	_, err := api.repository.GetEntity(entities.EmptyCategory(), id)
+	if err != nil {
+		if errors.Is(err, eventutils.ErrEntityNotFound) {
+			return fiber.NewError(fiber.StatusNotFound, "Category not found")
+		} else {
+			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the category, please try again later.")
+		}
+	}
+
+	file, err := c.FormFile("image")
+
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to read the uploaded image.")
+	}
+
+	err = saveFile(id, c, file)
+
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to save the uploaded image.")
+	}
+
+	c.SendStatus(fiber.StatusOK)
+	return nil
+}
+
+func saveFile(id uuid.UUID, c *fiber.Ctx, file *multipart.FileHeader) error {
+	imageName := fmt.Sprintf("%s.jpg", id)
+	basePath := os.Getenv("RESOURCE_FOLDER")
+	path := filepath.Join(basePath, "images/categories", imageName)
+	err := c.SaveFile(file, path)
+	return err
 }

@@ -1,8 +1,13 @@
 package internal
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -191,4 +196,49 @@ func TestChangeCategoryName(t *testing.T) {
 	// Assert
 	require.Equal(t, fiber.StatusOK, resp.StatusCode)
 	mockEntityRepository.AssertExpectations(t)
+}
+
+func TestUploadCategoryPicture(t *testing.T) {
+	// Arrange
+	os.Setenv("RESOURCE_FOLDER", "./resources")
+	err := os.MkdirAll("./resources/images/categories", 0755)
+	defer os.RemoveAll("./resources")
+	require.NoError(t, err)
+	menu := entities.NewMenu()
+	category := entities.NewCategory(menu.ID)
+	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository.
+		On("GetEntity", entities.EmptyCategory(), category.ID).
+		Return(category, nil)
+
+	app := fiber.New()
+	SetupApi(app, mockEntityRepository)
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	fw, err := writer.CreateFormFile("image", "test_category_image.jpg")
+	require.NoError(t, err)
+	file, err := os.Open("test_category_image.jpg")
+	require.NoError(t, err)
+	_, err = io.Copy(fw, file)
+	require.NoError(t, err)
+	writer.Close()
+
+	url := fmt.Sprintf("/categories/%s/upload-image", category.ID)
+	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body.Bytes()))
+	request.Header.Set("Content-Type", writer.FormDataContentType())
+	require.NoError(t, err)
+
+	// Act
+	resp, err := app.Test(request)
+
+	// Assert
+	require.NoError(t, err)
+	require.Equal(t, fiber.StatusOK, resp.StatusCode)
+	mockEntityRepository.AssertExpectations(t)
+	imageName := fmt.Sprintf("%s.jpg", category.ID)
+	basePath := os.Getenv("RESOURCE_FOLDER")
+	path := filepath.Join(basePath, "images/categories", imageName)
+	_, err = os.Stat(path)
+	require.NoError(t, err)
 }
