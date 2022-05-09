@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/Resta-Inc/resta/menu/queries/internal"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
@@ -11,24 +9,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "mysecretpassword"
-	dbname   = "postgres"
-)
-
-var pgConnectionString string = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-
-const eventStoreConnectionString = "esdb://127.0.0.1:2113?tls=false&keepAliveTimeout=10000&keepAliveInterval=10000"
-
 func main() {
+	config := internal.LoadConfig(".")
 	utils.Time = clock.New()
-	settings, _ := esdb.ParseConnectionString(eventStoreConnectionString)
+	settings, _ := esdb.ParseConnectionString(config.EventStoreConnectionString)
 	db, _ := esdb.NewClient(settings)
 	eventHandler := eventutils.NewEventHandler(db, "menu.queries")
-	menuRepository := internal.NewMenuRepository(pgConnectionString)
+	menuRepository := internal.NewMenuRepository(config.PostgresConnectionString)
 	menuEventHandler := internal.NewMenuEventHandler(menuRepository)
 	eventHandler.HandleEvent("MenuCreated", menuEventHandler.HandleMenuCreated)
 	eventHandler.HandleEvent("MenuEnabled", menuEventHandler.HandleMenuEnabled)
