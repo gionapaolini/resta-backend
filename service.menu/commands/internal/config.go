@@ -1,6 +1,8 @@
 package internal
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+)
 
 type Config struct {
 	EventStoreConnectionString string `mapstructure:"EVENT_STORE_CONNECTION_STRING"`
@@ -9,7 +11,7 @@ type Config struct {
 
 func LoadConfig(path string) (config Config) {
 	viper.AddConfigPath(path)
-	viper.SetConfigFile("app")
+	viper.SetConfigName("app")
 	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()
