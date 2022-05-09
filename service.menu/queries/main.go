@@ -27,7 +27,7 @@ func main() {
 	eventHandler.Start()
 
 	app := fiber.New()
-	internal.SetupApi(app, menuRepository)
+	internal.SetupApi(app, menuRepository, config.ResourcePath, config.ResourceHost)
 
 	app.Listen(":10001")
 }

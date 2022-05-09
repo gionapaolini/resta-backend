@@ -10,6 +10,7 @@ type MenuView struct {
 }
 
 type CategoryView struct {
-	ID   uuid.UUID `json:"id"`
-	Name string    `json:"name"`
+	ID       uuid.UUID `json:"id"`
+	Name     string    `json:"name"`
+	ImageURL string    `json:"imageURL"`
 }
