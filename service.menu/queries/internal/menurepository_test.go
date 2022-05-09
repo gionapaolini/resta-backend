@@ -232,6 +232,36 @@ func TestGetCategoriesByIDs(t *testing.T) {
 	require.Equal(t, categories[1].ID, categoryID2)
 }
 
+func TestGetCategoriesByIDs_ShouldHaveSubCategoriesIDPopulated(t *testing.T) {
+	// Arrange
+	viewRepository := NewMenuRepository(pgConnectionString)
+	categoryID, subCategoryID1, subCategoryID2, subCategoryName :=
+		utils.GenerateNewUUID(),
+		utils.GenerateNewUUID(),
+		utils.GenerateNewUUID(),
+		"TestSubCategory"
+
+	defer viewRepository.DeleteCategory(categoryID)
+	defer viewRepository.DeleteSubCategory(subCategoryID1)
+	defer viewRepository.DeleteSubCategory(subCategoryID2)
+	defer viewRepository.RemoveSubCategoryFromCategory(categoryID, subCategoryID1)
+	defer viewRepository.RemoveSubCategoryFromCategory(categoryID, subCategoryID2)
+
+	viewRepository.CreateCategory(categoryID, subCategoryName)
+	viewRepository.CreateSubCategory(subCategoryID1, subCategoryName)
+	viewRepository.CreateSubCategory(subCategoryID2, subCategoryName)
+	viewRepository.AddSubCategoryToCategory(categoryID, subCategoryID1)
+	viewRepository.AddSubCategoryToCategory(categoryID, subCategoryID2)
+
+	// Act
+	categories, err := viewRepository.GetCategoriesByIDs([]uuid.UUID{categoryID, subCategoryID1})
+
+	// Assert
+	require.NoError(t, err)
+	require.Contains(t, categories[0].SubCategoriesIDs, subCategoryID1)
+	require.Contains(t, categories[0].SubCategoriesIDs, subCategoryID2)
+}
+
 func TestChangeCategoryName(t *testing.T) {
 	// Arrange
 	newName := "NewName"
@@ -270,4 +300,30 @@ func TestCreateSubCategory(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, subCategoryID, returnedSubCategory.ID)
 	require.Equal(t, subCategoryName, returnedSubCategory.Name)
+}
+
+func TestAddSubCategoryToCategory(t *testing.T) {
+	// Arrange
+	viewRepository := NewMenuRepository(pgConnectionString)
+	categoryID, categoryName, subCategoryID, subCategoryName :=
+		utils.GenerateNewUUID(),
+		"TestCategory",
+		utils.GenerateNewUUID(),
+		"TestSubCategory"
+
+	defer viewRepository.DeleteSubCategory(subCategoryID)
+	defer viewRepository.RemoveSubCategoryFromCategory(categoryID, subCategoryID)
+	defer viewRepository.DeleteCategory(categoryID)
+	viewRepository.CreateCategory(categoryID, categoryName)
+	viewRepository.CreateSubCategory(subCategoryID, subCategoryName)
+
+	// Act
+	err := viewRepository.AddSubCategoryToCategory(categoryID, subCategoryID)
+
+	// Assert
+	require.NoError(t, err)
+	returnedCategory, err := viewRepository.GetCategory(categoryID)
+	require.NoError(t, err)
+	require.Len(t, returnedCategory.SubCategoriesIDs, 1)
+	require.Equal(t, returnedCategory.SubCategoriesIDs[0], subCategoryID)
 }

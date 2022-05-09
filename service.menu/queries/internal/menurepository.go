@@ -216,13 +216,21 @@ func (repo MenuRepository) GetCategory(categoryID uuid.UUID) (CategoryView, erro
 
 	var categoryView CategoryView
 
-	query := `SELECT * FROM categories WHERE id=$1`
+	query := `
+		SELECT m.*, array_agg(mc.subcategory_id) AS ids
+		FROM categories m
+		LEFT JOIN category_subcategories mc ON m.id = mc.category_id
+		WHERE m.id=$1
+		GROUP BY m.id;
+	`
 	row := db.QueryRow(query, categoryID)
-
+	var subCategoriesIDs []uint8
 	err = row.Scan(
 		&categoryView.ID,
 		&categoryView.Name,
+		&subCategoriesIDs,
 	)
+	populateSubCategoriesIDs(&categoryView, subCategoriesIDs)
 
 	if err != nil {
 		return CategoryView{}, err
@@ -269,7 +277,13 @@ func (repo MenuRepository) GetCategoriesByIDs(categoriesIDs []uuid.UUID) ([]Cate
 
 	idListString := makeStringList(categoriesIDs)
 
-	query := `SELECT * FROM categories WHERE id IN(` + idListString + `)`
+	query := `
+		SELECT m.*, array_agg(mc.subcategory_id) AS ids
+		FROM categories m
+		LEFT JOIN category_subcategories mc ON m.id = mc.category_id
+		WHERE id IN(` + idListString + `)
+		GROUP BY m.id;
+	`
 
 	rows, err := db.Query(query)
 	defer rows.Close()
@@ -278,10 +292,13 @@ func (repo MenuRepository) GetCategoriesByIDs(categoriesIDs []uuid.UUID) ([]Cate
 
 	for rows.Next() {
 		var categoryView CategoryView
+		var subCategoriesIDs []uint8
 		err = rows.Scan(
 			&categoryView.ID,
 			&categoryView.Name,
+			&subCategoriesIDs,
 		)
+		populateSubCategoriesIDs(&categoryView, subCategoriesIDs)
 
 		if err != nil {
 			return []CategoryView{}, err
@@ -360,6 +377,36 @@ func (repo MenuRepository) GetSubCategory(subCategoryID uuid.UUID) (SubCategoryV
 	return subCategoryView, nil
 }
 
+func (repo MenuRepository) RemoveSubCategoryFromCategory(categoryID, subCategoryID uuid.UUID) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `DELETE FROM category_subcategories WHERE category_id=$1 AND subcategory_id=$2`
+	_, err = db.Exec(query, categoryID, subCategoryID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo MenuRepository) AddSubCategoryToCategory(categoryID, subCategoryID uuid.UUID) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `INSERT INTO category_subcategories ("category_id", "subcategory_id") VALUES ($1, $2)`
+	_, err = db.Exec(query, categoryID, subCategoryID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // helpers
 func populateCategoriesIDs(menuView *MenuView, categoriesIDs []uint8) {
 	categoriesIDsString := string(categoriesIDs)
@@ -373,6 +420,21 @@ func populateCategoriesIDs(menuView *MenuView, categoriesIDs []uint8) {
 	for _, v := range categories {
 		categoryUUID, _ := uuid.FromString(v)
 		menuView.CategoriesIDs = append(menuView.CategoriesIDs, categoryUUID)
+	}
+}
+
+func populateSubCategoriesIDs(categoryView *CategoryView, subCategoriesIDs []uint8) {
+	subCategoriesIDsString := string(subCategoriesIDs)
+	if subCategoriesIDsString == "{NULL}" {
+		return
+	}
+	categoryView.SubCategoriesIDs = []uuid.UUID{}
+	subCategoriesString := strings.TrimPrefix(subCategoriesIDsString, "{")
+	subCategoriesString = strings.TrimSuffix(subCategoriesString, "}")
+	subCategories := strings.Split(string(subCategoriesString), ",")
+	for _, v := range subCategories {
+		subCategoryUUID, _ := uuid.FromString(v)
+		categoryView.SubCategoriesIDs = append(categoryView.SubCategoriesIDs, subCategoryUUID)
 	}
 }
 
