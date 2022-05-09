@@ -125,7 +125,8 @@ func TestGetCategoriesByIDsApi(t *testing.T) {
 	var categoriesResponse []CategoryView
 	err = json.Unmarshal(response, &categoriesResponse)
 
-	require.Equal(t, categories, categoriesResponse)
+	require.Equal(t, categories[0].ID, categoriesResponse[0].ID)
+	require.Equal(t, categories[0].Name, categoriesResponse[0].Name)
 }
 
 func TestGetCategoriesByIDsApi_ShouldHaveImageURL(t *testing.T) {
