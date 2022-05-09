@@ -35,6 +35,8 @@ func main() {
 		"CategoryCreated",
 		"CategoryAddedToMenu",
 		"CategoryNameChanged",
+		"SubCategoryCreated",
+		"SubCategoryAddedToCategory",
 	})
 	CreatePersistentSubscription("menu.commands", []string{
 		"CategoryCreated",

@@ -72,3 +72,13 @@ func (m MockMenuRepository) ChangeCategoryName(categoryID uuid.UUID, newName str
 	args := m.Called(categoryID, newName)
 	return args.Error(0)
 }
+
+func (m MockMenuRepository) CreateSubCategory(subCategoryID uuid.UUID, subCategoryName string) error {
+	args := m.Called(subCategoryID, subCategoryName)
+	return args.Error(0)
+}
+
+func (m MockMenuRepository) AddSubCategoryToCategory(categoryID, subCategoryID uuid.UUID) error {
+	args := m.Called(categoryID, subCategoryID)
+	return args.Error(0)
+}
