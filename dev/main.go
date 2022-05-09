@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"errors"
+	"os"
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/golang-migrate/migrate/v4"
@@ -22,6 +23,7 @@ const migrationsPath = "file:///src/service.menu/queries/internal/migrations"
 // const migrationsPath = "file://../service.menu/queries/internal/migrations"
 
 func main() {
+	os.MkdirAll("/src/resources/images/categories", 0755)
 	CreatePersistentSubscription("IntegrationTestGroup", []string{
 		"testEvent1",
 	})

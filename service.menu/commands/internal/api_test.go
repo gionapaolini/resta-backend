@@ -26,7 +26,7 @@ func TestCreateNewMenu(t *testing.T) {
 		Return(nil)
 
 	app := fiber.New()
-	SetupApi(app, mockEntityRepository)
+	SetupApi(app, mockEntityRepository, "")
 
 	url := "/menus"
 	request, err := http.NewRequest(http.MethodPost, url, nil)
@@ -56,7 +56,7 @@ func TestEnableMenu(t *testing.T) {
 		Return(nil)
 
 	app := fiber.New()
-	SetupApi(app, mockEntityRepository)
+	SetupApi(app, mockEntityRepository, "")
 
 	url := fmt.Sprintf("/menus/%s/enable", menu.ID)
 	request, err := http.NewRequest(http.MethodPost, url, nil)
@@ -87,7 +87,7 @@ func TestDisableMenu(t *testing.T) {
 		Return(nil)
 
 	app := fiber.New()
-	SetupApi(app, mockEntityRepository)
+	SetupApi(app, mockEntityRepository, "")
 
 	url := fmt.Sprintf("/menus/%s/disable", menu.ID)
 	request, err := http.NewRequest(http.MethodPost, url, nil)
@@ -118,7 +118,7 @@ func TestChangeMenuName(t *testing.T) {
 		Return(nil)
 
 	app := fiber.New()
-	SetupApi(app, mockEntityRepository)
+	SetupApi(app, mockEntityRepository, "")
 
 	jsonBody := `{"newName": "NewMenuName"}`
 	url := fmt.Sprintf("/menus/%s/change-name", menu.ID)
@@ -147,7 +147,7 @@ func TestNewCategory(t *testing.T) {
 		Return(nil)
 
 	app := fiber.New()
-	SetupApi(app, mockEntityRepository)
+	SetupApi(app, mockEntityRepository, "")
 
 	jsonBody := fmt.Sprintf(`{"menuID": "%s"}`, menu.ID)
 	url := "/categories"
@@ -182,7 +182,7 @@ func TestChangeCategoryName(t *testing.T) {
 		Return(nil)
 
 	app := fiber.New()
-	SetupApi(app, mockEntityRepository)
+	SetupApi(app, mockEntityRepository, "")
 
 	jsonBody := fmt.Sprintf(`{"newName": "%s"}`, newName)
 	url := fmt.Sprintf("/categories/%s/change-name", category.ID)
@@ -200,7 +200,6 @@ func TestChangeCategoryName(t *testing.T) {
 
 func TestUploadCategoryPicture(t *testing.T) {
 	// Arrange
-	os.Setenv("RESOURCE_FOLDER", "./resources")
 	err := os.MkdirAll("./resources/images/categories", 0755)
 	defer os.RemoveAll("./resources")
 	require.NoError(t, err)
@@ -212,7 +211,7 @@ func TestUploadCategoryPicture(t *testing.T) {
 		Return(category, nil)
 
 	app := fiber.New()
-	SetupApi(app, mockEntityRepository)
+	SetupApi(app, mockEntityRepository, "./resources")
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
@@ -237,8 +236,7 @@ func TestUploadCategoryPicture(t *testing.T) {
 	require.Equal(t, fiber.StatusOK, resp.StatusCode)
 	mockEntityRepository.AssertExpectations(t)
 	imageName := fmt.Sprintf("%s.jpg", category.ID)
-	basePath := os.Getenv("RESOURCE_FOLDER")
-	path := filepath.Join(basePath, "images/categories", imageName)
+	path := filepath.Join("./resources", "images/categories", imageName)
 	_, err = os.Stat(path)
 	require.NoError(t, err)
 }

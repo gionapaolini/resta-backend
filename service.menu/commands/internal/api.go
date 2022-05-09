@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"mime/multipart"
-	"os"
 	"path/filepath"
 
 	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
@@ -14,12 +13,14 @@ import (
 )
 
 type Api struct {
-	repository eventutils.IEntityRepository
+	repository   eventutils.IEntityRepository
+	resourcePath string
 }
 
-func SetupApi(app *fiber.App, repo eventutils.IEntityRepository) {
+func SetupApi(app *fiber.App, repo eventutils.IEntityRepository, resourcePath string) {
 	api := Api{
-		repository: repo,
+		repository:   repo,
+		resourcePath: resourcePath,
 	}
 	api.setupRoutes(app)
 }
@@ -207,7 +208,7 @@ func (api Api) UploadCategoryImage(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to read the uploaded image.")
 	}
 
-	err = saveFile(id, c, file)
+	err = saveFile(id, c, file, api.resourcePath)
 
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to save the uploaded image.")
@@ -217,10 +218,9 @@ func (api Api) UploadCategoryImage(c *fiber.Ctx) error {
 	return nil
 }
 
-func saveFile(id uuid.UUID, c *fiber.Ctx, file *multipart.FileHeader) error {
+func saveFile(id uuid.UUID, c *fiber.Ctx, file *multipart.FileHeader, resourcePath string) error {
 	imageName := fmt.Sprintf("%s.jpg", id)
-	basePath := os.Getenv("RESOURCE_FOLDER")
-	path := filepath.Join(basePath, "images/categories", imageName)
+	path := filepath.Join(resourcePath, "images/categories", imageName)
 	err := c.SaveFile(file, path)
 	return err
 }

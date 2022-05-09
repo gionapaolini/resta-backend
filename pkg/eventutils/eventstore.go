@@ -28,11 +28,7 @@ type EventStore struct {
 	db *esdb.Client
 }
 
-func NewEventStore(connectionString string) (*EventStore, error) {
-	client, err := NewEsdbClient(connectionString)
-	if err != nil {
-		return nil, err
-	}
+func NewEventStore(client *esdb.Client) (*EventStore, error) {
 	eventStore := &EventStore{
 		db: client,
 	}

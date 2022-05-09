@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/stretchr/testify/require"
 )
@@ -19,7 +20,9 @@ type TestEvent struct {
 
 func TestSaveEventsAsNewStream(t *testing.T) {
 	// Arrange
-	eventStore, err := NewEventStore(eventStoreConnectionString)
+	settings, _ := esdb.ParseConnectionString(eventStoreConnectionString)
+	db, _ := esdb.NewClient(settings)
+	eventStore, err := NewEventStore(db)
 
 	require.NoError(t, err)
 
@@ -40,7 +43,10 @@ func TestSaveEventsAsNewStream(t *testing.T) {
 
 func TestSaveEventsToExistentStream(t *testing.T) {
 	// Arrange
-	eventStore, _ := NewEventStore(eventStoreConnectionString)
+	settings, _ := esdb.ParseConnectionString(eventStoreConnectionString)
+	db, _ := esdb.NewClient(settings)
+	eventStore, err := NewEventStore(db)
+
 	events := getRandomEvents(5)
 	newEvents := getRandomEvents(5)
 
@@ -48,7 +54,7 @@ func TestSaveEventsToExistentStream(t *testing.T) {
 	_, _ = eventStore.SaveEventsToNewStream(streamName, events)
 
 	// Act
-	_, err := eventStore.SaveEventsToExistingStream(streamName, newEvents)
+	_, err = eventStore.SaveEventsToExistingStream(streamName, newEvents)
 	require.NoError(t, err)
 
 	// Assert
