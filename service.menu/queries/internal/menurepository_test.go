@@ -327,3 +327,48 @@ func TestAddSubCategoryToCategory(t *testing.T) {
 	require.Len(t, returnedCategory.SubCategoriesIDs, 1)
 	require.Equal(t, returnedCategory.SubCategoriesIDs[0], subCategoryID)
 }
+
+func TestCreateMenuItem(t *testing.T) {
+	// Arrange
+	menuItemID, menuItemName :=
+		utils.GenerateNewUUID(), "TestMenuItem"
+
+	viewRepository := NewMenuRepository(pgConnectionString)
+	defer viewRepository.DeleteMenuItem(menuItemID)
+
+	// Act
+	err := viewRepository.CreateMenuItem(menuItemID, menuItemName)
+
+	// Assert
+	require.NoError(t, err)
+	returnedMenuItem, err := viewRepository.GetMenuItem(menuItemID)
+	require.NoError(t, err)
+	require.Equal(t, menuItemID, returnedMenuItem.ID)
+	require.Equal(t, menuItemName, returnedMenuItem.Name)
+}
+
+func TestAddMenuItemToSubCategory(t *testing.T) {
+	// Arrange
+	viewRepository := NewMenuRepository(pgConnectionString)
+	subCategoryID, subCategoryName, menuItemID, menuItemName :=
+		utils.GenerateNewUUID(),
+		"TestCategory",
+		utils.GenerateNewUUID(),
+		"TestMenuItem"
+
+	defer viewRepository.DeleteMenuItem(menuItemID)
+	defer viewRepository.RemoveMenuItemFromSubCategory(subCategoryID, menuItemID)
+	defer viewRepository.DeleteCategory(subCategoryID)
+	viewRepository.CreateSubCategory(subCategoryID, subCategoryName)
+	viewRepository.CreateMenuItem(menuItemID, menuItemName)
+
+	// Act
+	err := viewRepository.AddMenuItemToSubCategory(subCategoryID, menuItemID)
+
+	// Assert
+	require.NoError(t, err)
+	returnedSubCategory, err := viewRepository.GetSubCategory(subCategoryID)
+	require.NoError(t, err)
+	require.Len(t, returnedSubCategory.MenuItemsIDs, 1)
+	require.Equal(t, returnedSubCategory.MenuItemsIDs[0], menuItemID)
+}

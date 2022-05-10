@@ -74,7 +74,7 @@ func (repo MenuRepository) GetMenu(menuID uuid.UUID) (MenuView, error) {
 		&menuView.IsEnabled,
 		&categoriesIDs,
 	)
-	populateCategoriesIDs(&menuView, categoriesIDs)
+	menuView.CategoriesIDs = convertUint8ToUUIDSlice(categoriesIDs)
 	if err != nil {
 		return MenuView{}, err
 	}
@@ -108,8 +108,7 @@ func (repo MenuRepository) GetAllMenus() ([]MenuView, error) {
 			&menuView.IsEnabled,
 			&categoriesIDs,
 		)
-
-		populateCategoriesIDs(&menuView, categoriesIDs)
+		menuView.CategoriesIDs = convertUint8ToUUIDSlice(categoriesIDs)
 		if err != nil {
 			log.Fatalf("Unable to scan the row. %v", err)
 		}
@@ -232,7 +231,8 @@ func (repo MenuRepository) GetCategory(categoryID uuid.UUID) (CategoryView, erro
 		&categoryView.Name,
 		&subCategoriesIDs,
 	)
-	populateSubCategoriesIDs(&categoryView, subCategoriesIDs)
+
+	categoryView.SubCategoriesIDs = convertUint8ToUUIDSlice(subCategoriesIDs)
 
 	if err != nil {
 		return CategoryView{}, err
@@ -300,7 +300,8 @@ func (repo MenuRepository) GetCategoriesByIDs(categoriesIDs []uuid.UUID) ([]Cate
 			&categoryView.Name,
 			&subCategoriesIDs,
 		)
-		populateSubCategoriesIDs(&categoryView, subCategoriesIDs)
+
+		categoryView.SubCategoriesIDs = convertUint8ToUUIDSlice(subCategoriesIDs)
 
 		if err != nil {
 			return []CategoryView{}, err
@@ -365,13 +366,22 @@ func (repo MenuRepository) GetSubCategory(subCategoryID uuid.UUID) (SubCategoryV
 
 	var subCategoryView SubCategoryView
 
-	query := `SELECT * FROM subcategories WHERE id=$1`
+	query := `
+		SELECT m.*, array_agg(mc.menuitem_id) AS ids
+		FROM subcategories m
+		LEFT JOIN subcategory_menuitems mc ON m.id = mc.subcategory_id
+		WHERE m.id=$1
+		GROUP BY m.id;
+	`
 	row := db.QueryRow(query, subCategoryID)
-
+	var menuItemsIDs []uint8
 	err = row.Scan(
 		&subCategoryView.ID,
 		&subCategoryView.Name,
+		&menuItemsIDs,
 	)
+
+	subCategoryView.MenuItemsIDs = convertUint8ToUUIDSlice(menuItemsIDs)
 
 	if err != nil {
 		return SubCategoryView{}, err
@@ -409,35 +419,104 @@ func (repo MenuRepository) AddSubCategoryToCategory(categoryID, subCategoryID uu
 	return nil
 }
 
+func (repo MenuRepository) CreateMenuItem(menuItemID uuid.UUID, menuItemName string) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `INSERT INTO menuitems ("id", "name") VALUES ($1, $2)`
+	_, err = db.Exec(query, menuItemID, menuItemName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo MenuRepository) DeleteMenuItem(menuItemID uuid.UUID) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `DELETE FROM menuitems WHERE id=$1`
+	_, err = db.Exec(query, menuItemID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo MenuRepository) GetMenuItem(menuItemID uuid.UUID) (MenuItemView, error) {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return MenuItemView{}, err
+	}
+	defer db.Close()
+
+	var menuItemView MenuItemView
+
+	query := `SELECT * FROM menuitems WHERE id=$1`
+	row := db.QueryRow(query, menuItemID)
+
+	err = row.Scan(
+		&menuItemView.ID,
+		&menuItemView.Name,
+	)
+
+	if err != nil {
+		return MenuItemView{}, err
+	}
+	return menuItemView, nil
+}
+
+func (repo MenuRepository) RemoveMenuItemFromSubCategory(subCategoryID, menuItemID uuid.UUID) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `DELETE FROM subcategory_menuitems WHERE subcategory_id=$1 AND menuitem_id=$2`
+	_, err = db.Exec(query, subCategoryID, menuItemID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo MenuRepository) AddMenuItemToSubCategory(subCategoryID, menuItemID uuid.UUID) error {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `INSERT INTO subcategory_menuitems ("subcategory_id", "menuitem_id") VALUES ($1, $2)`
+	_, err = db.Exec(query, subCategoryID, menuItemID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // helpers
-func populateCategoriesIDs(menuView *MenuView, categoriesIDs []uint8) {
+
+func convertUint8ToUUIDSlice(categoriesIDs []uint8) (res []uuid.UUID) {
 	categoriesIDsString := string(categoriesIDs)
 	if categoriesIDsString == "{NULL}" {
 		return
 	}
-	menuView.CategoriesIDs = []uuid.UUID{}
 	categoriesString := strings.TrimPrefix(categoriesIDsString, "{")
 	categoriesString = strings.TrimSuffix(categoriesString, "}")
 	categories := strings.Split(string(categoriesString), ",")
 	for _, v := range categories {
-		categoryUUID, _ := uuid.FromString(v)
-		menuView.CategoriesIDs = append(menuView.CategoriesIDs, categoryUUID)
+		id, _ := uuid.FromString(v)
+		res = append(res, id)
 	}
-}
-
-func populateSubCategoriesIDs(categoryView *CategoryView, subCategoriesIDs []uint8) {
-	subCategoriesIDsString := string(subCategoriesIDs)
-	if subCategoriesIDsString == "{NULL}" {
-		return
-	}
-	categoryView.SubCategoriesIDs = []uuid.UUID{}
-	subCategoriesString := strings.TrimPrefix(subCategoriesIDsString, "{")
-	subCategoriesString = strings.TrimSuffix(subCategoriesString, "}")
-	subCategories := strings.Split(string(subCategoriesString), ",")
-	for _, v := range subCategories {
-		subCategoryUUID, _ := uuid.FromString(v)
-		categoryView.SubCategoriesIDs = append(categoryView.SubCategoriesIDs, subCategoryUUID)
-	}
+	return
 }
 
 func makeStringList(categoriesIDs []uuid.UUID) string {
