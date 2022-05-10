@@ -36,6 +36,8 @@ func (api Api) setupRoutes(app *fiber.App) {
 	app.Post("/categories/:id/upload-image", api.UploadCategoryImage)
 
 	app.Post("/subcategories", api.CreateNewSubCategory)
+
+	app.Post("/menuitems", api.CreateNewMenuItem)
 }
 
 func (api Api) CreateNewMenu(c *fiber.Ctx) error {
@@ -246,6 +248,39 @@ func (api Api) CreateNewSubCategory(c *fiber.Ctx) error {
 	}
 	subcategory := entities.NewSubCategory(categoryID)
 	err = api.repository.SaveEntity(subcategory)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the changes. Please try again later")
+	}
+	c.SendStatus(fiber.StatusCreated)
+	return nil
+}
+
+type CreateNewMenuItemRequest struct {
+	SubCategoryID string `json:"subCategoryID"`
+}
+
+func (api Api) CreateNewMenuItem(c *fiber.Ctx) error {
+	reqBody := new(CreateNewMenuItemRequest)
+	if err := c.BodyParser(reqBody); err != nil {
+		return err
+	}
+	subCategoryID := uuid.FromStringOrNil(reqBody.SubCategoryID)
+	if subCategoryID == uuid.Nil {
+		return fiber.NewError(fiber.StatusBadRequest, "subCategoryID is not valid")
+	}
+	subCategory, err := api.repository.GetEntity(entities.EmptySubCategory(), subCategoryID)
+	if err != nil {
+		if errors.Is(err, eventutils.ErrEntityNotFound) {
+			return fiber.NewError(fiber.StatusNotFound, "SubCategory not found")
+		} else {
+			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the SubCategory, please try again later.")
+		}
+	}
+	if subCategory.(entities.SubCategory).IsDeleted {
+		return fiber.NewError(fiber.StatusNotFound, "SubCategory not found")
+	}
+	menuItem := entities.NewMenuItem(subCategoryID)
+	err = api.repository.SaveEntity(menuItem)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the changes. Please try again later")
 	}

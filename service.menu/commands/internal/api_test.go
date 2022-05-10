@@ -270,3 +270,32 @@ func TestNewSubCategory(t *testing.T) {
 	require.Equal(t, fiber.StatusCreated, resp.StatusCode)
 	mockEntityRepository.AssertExpectations(t)
 }
+
+func TestNewMenuItem(t *testing.T) {
+	// Arrange
+	subCategory := entities.NewSubCategory(utils.GenerateNewUUID())
+	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository.
+		On("GetEntity", entities.EmptySubCategory(), subCategory.ID).
+		Return(subCategory, nil)
+
+	mockEntityRepository.
+		On("SaveEntity", mock.AnythingOfType("MenuItem")).
+		Return(nil)
+
+	app := fiber.New()
+	SetupApi(app, mockEntityRepository, "")
+
+	jsonBody := fmt.Sprintf(`{"subCategoryID": "%s"}`, subCategory.ID)
+	url := "/menuitems"
+	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(jsonBody))
+	request.Header.Add("content-type", "application/json")
+	require.NoError(t, err)
+
+	// Act
+	resp, _ := app.Test(request)
+
+	// Assert
+	require.Equal(t, fiber.StatusCreated, resp.StatusCode)
+	mockEntityRepository.AssertExpectations(t)
+}
