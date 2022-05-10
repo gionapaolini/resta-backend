@@ -254,7 +254,7 @@ func TestGetCategoriesByIDs_ShouldHaveSubCategoriesIDPopulated(t *testing.T) {
 	viewRepository.AddSubCategoryToCategory(categoryID, subCategoryID2)
 
 	// Act
-	categories, err := viewRepository.GetCategoriesByIDs([]uuid.UUID{categoryID, subCategoryID1})
+	categories, err := viewRepository.GetCategoriesByIDs([]uuid.UUID{categoryID})
 
 	// Assert
 	require.NoError(t, err)
@@ -371,4 +371,34 @@ func TestAddMenuItemToSubCategory(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, returnedSubCategory.MenuItemsIDs, 1)
 	require.Equal(t, returnedSubCategory.MenuItemsIDs[0], menuItemID)
+}
+
+func TestGetSubCategoriesByIDs_ShouldHaveMenuItemsIDsPopulated(t *testing.T) {
+	// Arrange
+	viewRepository := NewMenuRepository(pgConnectionString)
+	subCategoryID, menuItem1, menuItem2, menuItemName :=
+		utils.GenerateNewUUID(),
+		utils.GenerateNewUUID(),
+		utils.GenerateNewUUID(),
+		"TestSubCategory"
+
+	defer viewRepository.DeleteCategory(subCategoryID)
+	defer viewRepository.DeleteSubCategory(menuItem1)
+	defer viewRepository.DeleteSubCategory(menuItem2)
+	defer viewRepository.RemoveSubCategoryFromCategory(subCategoryID, menuItem1)
+	defer viewRepository.RemoveSubCategoryFromCategory(subCategoryID, menuItem2)
+
+	viewRepository.CreateSubCategory(subCategoryID, menuItemName)
+	viewRepository.CreateMenuItem(menuItem1, menuItemName)
+	viewRepository.CreateMenuItem(menuItem2, menuItemName)
+	viewRepository.AddMenuItemToSubCategory(subCategoryID, menuItem1)
+	viewRepository.AddMenuItemToSubCategory(subCategoryID, menuItem2)
+
+	// Act
+	categories, err := viewRepository.GetSubCategoriesByIDs([]uuid.UUID{subCategoryID})
+
+	// Assert
+	require.NoError(t, err)
+	require.Contains(t, categories[0].MenuItemsIDs, menuItem1)
+	require.Contains(t, categories[0].MenuItemsIDs, menuItem2)
 }

@@ -22,6 +22,7 @@ type IMenuRepository interface {
 	GetCategoriesByIDs(categoriesIDs []uuid.UUID) ([]CategoryView, error)
 	ChangeCategoryName(categoryID uuid.UUID, newName string) error
 	CreateSubCategory(subCategoryID uuid.UUID, subCategoryName string) error
+	GetSubCategoriesByIDs(subCategoriesIDs []uuid.UUID) ([]SubCategoryView, error)
 	AddSubCategoryToCategory(categoryID, subCategoryID uuid.UUID) error
 	CreateMenuItem(menuItemID uuid.UUID, menuItemName string) error
 	AddMenuItemToSubCategory(subCategoryID, menuItemID uuid.UUID) error
@@ -389,6 +390,48 @@ func (repo MenuRepository) GetSubCategory(subCategoryID uuid.UUID) (SubCategoryV
 		return SubCategoryView{}, err
 	}
 	return subCategoryView, nil
+}
+
+func (repo MenuRepository) GetSubCategoriesByIDs(subCategoriesIDs []uuid.UUID) ([]SubCategoryView, error) {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return []SubCategoryView{}, err
+	}
+	defer db.Close()
+
+	idListString := makeStringList(subCategoriesIDs)
+
+	query := `
+		SELECT m.*, array_agg(mc.menuitem_id) AS ids
+		FROM subcategories m
+		LEFT JOIN subcategory_menuitems mc ON m.id = mc.subcategory_id
+		WHERE id IN(` + idListString + `)
+		GROUP BY m.id;
+	`
+
+	rows, err := db.Query(query)
+	defer rows.Close()
+
+	subCategories := []SubCategoryView{}
+
+	for rows.Next() {
+		var subCategoryView SubCategoryView
+		var menuItemsIDs []uint8
+		err = rows.Scan(
+			&subCategoryView.ID,
+			&subCategoryView.Name,
+			&menuItemsIDs,
+		)
+
+		subCategoryView.MenuItemsIDs = convertUint8ToUUIDSlice(menuItemsIDs)
+
+		if err != nil {
+			return []SubCategoryView{}, err
+		}
+		subCategories = append(subCategories, subCategoryView)
+	}
+
+	return subCategories, nil
 }
 
 func (repo MenuRepository) RemoveSubCategoryFromCategory(categoryID, subCategoryID uuid.UUID) error {

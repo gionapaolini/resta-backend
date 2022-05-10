@@ -29,6 +29,8 @@ func (api Api) setupRoutes(app *fiber.App, resourcePath string) {
 
 	app.Get("/categories/by-ids", api.GetCategoriesByIDs)
 
+	app.Get("/subcategories/by-ids", api.GetSubCategoriesByIDs)
+
 	path := filepath.Join(resourcePath, "images/categories")
 	app.Static("/images/categories", path)
 }
@@ -76,6 +78,25 @@ func (api Api) GetCategoriesByIDs(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the categories, please try again later.")
 	}
 	return c.JSON(categories)
+}
+
+func (api Api) GetSubCategoriesByIDs(c *fiber.Ctx) error {
+	ids := c.Query("id")
+	uuids := []uuid.UUID{}
+	for _, v := range strings.Split(ids, ",") {
+		parsedID := uuid.FromStringOrNil(v)
+		if parsedID == uuid.Nil {
+			fmtError := fmt.Sprintf("invalid subcategory id: %s", v)
+			return fiber.NewError(fiber.StatusBadRequest, fmtError)
+		}
+		uuids = append(uuids, parsedID)
+	}
+	subcategories, err := api.menuRepository.GetSubCategoriesByIDs(uuids)
+
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the subcategories, please try again later.")
+	}
+	return c.JSON(subcategories)
 }
 
 func populateCategoryImageURL(categories []CategoryView, api Api) (populatedCategories []CategoryView) {

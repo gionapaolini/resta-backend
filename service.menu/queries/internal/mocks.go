@@ -78,6 +78,12 @@ func (m MockMenuRepository) CreateSubCategory(subCategoryID uuid.UUID, subCatego
 	return args.Error(0)
 }
 
+func (m MockMenuRepository) GetSubCategoriesByIDs(subCategoriesIDs []uuid.UUID) ([]SubCategoryView, error) {
+	args := m.Called(subCategoriesIDs)
+	subCategoriesViews, _ := args.Get(0).([]SubCategoryView)
+	return subCategoriesViews, args.Error(1)
+}
+
 func (m MockMenuRepository) AddSubCategoryToCategory(categoryID, subCategoryID uuid.UUID) error {
 	args := m.Called(categoryID, subCategoryID)
 	return args.Error(0)

@@ -178,3 +178,46 @@ func TestGetCategoriesByIDsApi_ShouldHaveImageURL(t *testing.T) {
 	require.Equal(t, categoriesResponse[0].ImageURL, fmt.Sprintf("http://localhost:10001/images/categories/%s.jpg", categories[0].ID))
 	require.Equal(t, categoriesResponse[1].ImageURL, fmt.Sprintf("http://localhost:10001/images/categories/%s.jpg", categories[1].ID))
 }
+
+func TestGetSubCategoriesByIDsApi(t *testing.T) {
+	// Arrange
+	categories := []SubCategoryView{
+		{
+			ID:   utils.GenerateNewUUID(),
+			Name: "TestName1",
+		},
+		{
+			ID:   utils.GenerateNewUUID(),
+			Name: "TestName2",
+		},
+	}
+	mockMenuRepository := new(MockMenuRepository)
+	mockMenuRepository.
+		On("GetSubCategoriesByIDs", []uuid.UUID{
+			categories[0].ID,
+			categories[1].ID,
+		}).
+		Return(categories, nil)
+
+	app := fiber.New()
+	SetupApi(app, mockMenuRepository, "", "")
+
+	url := fmt.Sprintf("/subcategories/by-ids?id=%s,%s", categories[0].ID, categories[1].ID)
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	require.NoError(t, err)
+
+	// Act
+	resp, _ := app.Test(request, 100000)
+
+	// Assert
+	require.Equal(t, fiber.StatusOK, resp.StatusCode)
+
+	response, err := ioutil.ReadAll(resp.Body)
+	require.NoError(t, err)
+
+	var subCategoriesResponse []SubCategoryView
+	err = json.Unmarshal(response, &subCategoriesResponse)
+
+	require.Equal(t, categories[0].ID, subCategoriesResponse[0].ID)
+	require.Equal(t, categories[0].Name, subCategoriesResponse[0].Name)
+}
