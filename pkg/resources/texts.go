@@ -11,3 +11,7 @@ func DefaultCategoryName(lang string) string {
 func DefaultSubCategoryName(lang string) string {
 	return "Untitled Sub-Category"
 }
+
+func DefaultMenuItemName(lang string) string {
+	return "Untitled Dish"
+}
