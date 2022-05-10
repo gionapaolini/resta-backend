@@ -23,6 +23,8 @@ type IMenuRepository interface {
 	ChangeCategoryName(categoryID uuid.UUID, newName string) error
 	CreateSubCategory(subCategoryID uuid.UUID, subCategoryName string) error
 	AddSubCategoryToCategory(categoryID, subCategoryID uuid.UUID) error
+	CreateMenuItem(menuItemID uuid.UUID, menuItemName string) error
+	AddMenuItemToSubCategory(subCategoryID, menuItemID uuid.UUID) error
 }
 
 type MenuRepository struct {

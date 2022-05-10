@@ -116,3 +116,25 @@ func (menuEventHandler MenuEventHandler) HandleSubCategoryAddedToCategory(rawEve
 	err = menuEventHandler.menuRepository.AddSubCategoryToCategory(event.GetEntityID(), event.SubCategoryID)
 	return err
 }
+
+func (menuEventHandler MenuEventHandler) HandleMenuItemCreated(rawEvent *esdb.SubscriptionEvent) error {
+	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
+	var event events.MenuItemCreated
+	err := json.Unmarshal(rawData, &event)
+	if err != nil {
+		return err
+	}
+	err = menuEventHandler.menuRepository.CreateMenuItem(event.GetEntityID(), event.Name)
+	return err
+}
+
+func (menuEventHandler MenuEventHandler) HandleMenuItemAddedToSubCategory(rawEvent *esdb.SubscriptionEvent) error {
+	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
+	var event events.MenuItemAddedToSubCategory
+	err := json.Unmarshal(rawData, &event)
+	if err != nil {
+		return err
+	}
+	err = menuEventHandler.menuRepository.AddMenuItemToSubCategory(event.GetEntityID(), event.MenuItemID)
+	return err
+}

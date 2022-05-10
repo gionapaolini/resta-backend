@@ -8,7 +8,6 @@ require (
 	github.com/Resta-Inc/resta v0.0.0
 	github.com/benbjohnson/clock v1.3.0
 	github.com/gofrs/uuid v4.2.0+incompatible
-	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.4
 	github.com/spf13/viper v1.11.0
 	github.com/stretchr/testify v1.7.1

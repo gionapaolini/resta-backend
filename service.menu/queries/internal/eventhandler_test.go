@@ -310,3 +310,74 @@ func TestHandleSubCategoryAddetToCategory(t *testing.T) {
 	// Assert
 	mockMenuRepository.AssertExpectations(t)
 }
+
+func TestHandleMenuItemCreatedMessage(t *testing.T) {
+	// Arrange
+	subCategoryID, menuItemID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
+
+	subCategoryCreatedEvent := events.MenuItemCreated{
+		EntityEventInfo:     eventutils.NewEntityEventInfo(menuItemID),
+		Name:                "TestMenuItemName",
+		ParentSubCategoryID: subCategoryID,
+	}
+
+	incomingMessage := &esdb.SubscriptionEvent{
+		EventAppeared: &esdb.ResolvedEvent{
+			Event: &esdb.RecordedEvent{
+				Data: utils.SerializeObject(subCategoryCreatedEvent),
+			},
+		},
+		SubscriptionDropped: &esdb.SubscriptionDropped{},
+		CheckPointReached:   &esdb.Position{},
+	}
+
+	mockMenuRepository := new(MockMenuRepository)
+	mockMenuRepository.
+		On("CreateMenuItem",
+			menuItemID,
+			subCategoryCreatedEvent.Name).
+		Return(nil)
+
+	eventHandler := NewMenuEventHandler(mockMenuRepository)
+
+	// Act
+	eventHandler.HandleMenuItemCreated(incomingMessage)
+
+	// Assert
+	mockMenuRepository.AssertExpectations(t)
+}
+
+func TestHandleMenuItemAddetToCategory(t *testing.T) {
+	// Arrange
+	subCategoryID, menuItemID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
+
+	subCategoryAddedToCategoryEvent := events.MenuItemAddedToSubCategory{
+		EntityEventInfo: eventutils.NewEntityEventInfo(subCategoryID),
+		MenuItemID:      menuItemID,
+	}
+
+	incomingMessage := &esdb.SubscriptionEvent{
+		EventAppeared: &esdb.ResolvedEvent{
+			Event: &esdb.RecordedEvent{
+				Data: utils.SerializeObject(subCategoryAddedToCategoryEvent),
+			},
+		},
+		SubscriptionDropped: &esdb.SubscriptionDropped{},
+		CheckPointReached:   &esdb.Position{},
+	}
+
+	mockMenuRepository := new(MockMenuRepository)
+	mockMenuRepository.
+		On("AddMenuItemToSubCategory",
+			subCategoryID,
+			menuItemID).
+		Return(nil)
+
+	eventHandler := NewMenuEventHandler(mockMenuRepository)
+
+	// Act
+	eventHandler.HandleMenuItemAddedToSubCategory(incomingMessage)
+
+	// Assert
+	mockMenuRepository.AssertExpectations(t)
+}

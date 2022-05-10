@@ -26,6 +26,8 @@ func main() {
 	eventHandler.HandleEvent("CategoryNameChanged", menuEventHandler.HandleCategoryNameChanged)
 	eventHandler.HandleEvent("SubCategoryCreated", menuEventHandler.HandleSubCategoryCreated)
 	eventHandler.HandleEvent("SubCategoryAddedToCategory", menuEventHandler.HandleSubCategoryAddedToCategory)
+	eventHandler.HandleEvent("MenuItemCreated", menuEventHandler.HandleMenuItemCreated)
+	eventHandler.HandleEvent("MenuItemAddedToSubCategory", menuEventHandler.HandleMenuItemAddedToSubCategory)
 	eventHandler.Start()
 
 	app := fiber.New()
