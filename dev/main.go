@@ -37,10 +37,13 @@ func main() {
 		"CategoryNameChanged",
 		"SubCategoryCreated",
 		"SubCategoryAddedToCategory",
+		"MenuItemCreated",
+		"MenuItemAddedToSubCategory",
 	})
 	CreatePersistentSubscription("menu.commands", []string{
 		"CategoryCreated",
 		"SubCategoryCreated",
+		"MenuItemCreated",
 	})
 	RunPostgresMigrations()
 }

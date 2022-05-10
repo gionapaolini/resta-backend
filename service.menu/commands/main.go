@@ -27,6 +27,7 @@ func main() {
 	menuEventHandler := internal.NewMenuEventHandler(entityRepository)
 	eventHandler.HandleEvent("CategoryCreated", menuEventHandler.HandleCategoryCreated)
 	eventHandler.HandleEvent("SubCategoryCreated", menuEventHandler.HandleSubCategoryCreated)
+	eventHandler.HandleEvent("MenuItemCreated", menuEventHandler.HandleMenuItemCreated)
 	eventHandler.Start()
 
 	app := fiber.New()
