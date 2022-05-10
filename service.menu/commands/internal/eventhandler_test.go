@@ -97,3 +97,46 @@ func TestHandleSubCategoryCreatedMessage(t *testing.T) {
 	// Assert
 	mockEntityRepository.AssertExpectations(t)
 }
+
+func TestHandleMenuItemCreatedMessage(t *testing.T) {
+	// Arrange
+	menuItemID := utils.GenerateNewUUID()
+	subCategory := entities.NewSubCategory(utils.GenerateNewUUID())
+
+	menuItemCreatedEvent := events.MenuItemCreated{
+		EntityEventInfo:     eventutils.NewEntityEventInfo(menuItemID),
+		Name:                "TestMenuItemName",
+		ParentSubCategoryID: subCategory.ID,
+	}
+
+	incomingMessage := &esdb.SubscriptionEvent{
+		EventAppeared: &esdb.ResolvedEvent{
+			Event: &esdb.RecordedEvent{
+				Data: utils.SerializeObject(menuItemCreatedEvent),
+			},
+		},
+		SubscriptionDropped: &esdb.SubscriptionDropped{},
+		CheckPointReached:   &esdb.Position{},
+	}
+
+	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository.
+		On("GetEntity", entities.EmptySubCategory(), subCategory.ID).
+		Return(subCategory, nil)
+
+	mockEntityRepository.
+		On("SaveEntity", mock.MatchedBy(
+			func(subCategory entities.SubCategory) bool {
+				return slices.Contains(subCategory.GetMenuItemsIDs(), menuItemID)
+			},
+		)).
+		Return(nil)
+
+	eventHandler := NewMenuEventHandler(mockEntityRepository)
+
+	// Act
+	eventHandler.HandleMenuItemCreated(incomingMessage)
+
+	// Assert
+	mockEntityRepository.AssertExpectations(t)
+}

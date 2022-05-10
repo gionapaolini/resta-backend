@@ -39,6 +39,19 @@ func TestChangeSubCategoryName(t *testing.T) {
 	require.IsType(t, events.SubCategoryNameChanged{}, subCategory.GetLatestEvents()[1])
 }
 
+func Test_AddMenuItem(t *testing.T) {
+	// Arrange
+	menuItemID := utils.GenerateNewUUID()
+	subCategory := NewSubCategory(utils.GenerateNewUUID())
+
+	// Act
+	subCategory = subCategory.AddMenuItem(menuItemID)
+
+	// Assert
+	require.Contains(t, subCategory.GetMenuItemsIDs(), menuItemID)
+	require.IsType(t, events.MenuItemAddedToSubCategory{}, subCategory.GetLatestEvents()[1])
+}
+
 func Test_DeserializeSubCategoryEvent(t *testing.T) {
 	// Arrange
 	events := []eventutils.IEvent{
@@ -46,6 +59,9 @@ func Test_DeserializeSubCategoryEvent(t *testing.T) {
 			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
 		},
 		events.SubCategoryNameChanged{
+			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
+		},
+		events.MenuItemAddedToSubCategory{
 			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
 		},
 	}

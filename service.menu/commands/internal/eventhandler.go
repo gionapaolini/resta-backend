@@ -50,3 +50,19 @@ func (eventHandler MenuEventHandler) HandleSubCategoryCreated(rawEvent *esdb.Sub
 	err = eventHandler.entityRepository.SaveEntity(category)
 	return err
 }
+
+func (eventHandler MenuEventHandler) HandleMenuItemCreated(rawEvent *esdb.SubscriptionEvent) error {
+	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
+	var event events.MenuItemCreated
+	err := json.Unmarshal(rawData, &event)
+	if err != nil {
+		return err
+	}
+	subCategory, err := eventHandler.entityRepository.GetEntity(entities.EmptySubCategory(), event.ParentSubCategoryID)
+	if err != nil {
+		return err
+	}
+	subCategory = subCategory.(entities.SubCategory).AddMenuItem(event.GetEntityID())
+	err = eventHandler.entityRepository.SaveEntity(subCategory)
+	return err
+}

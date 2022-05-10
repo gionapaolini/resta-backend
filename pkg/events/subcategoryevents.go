@@ -15,3 +15,8 @@ type SubCategoryNameChanged struct {
 	eventutils.EntityEventInfo
 	NewName string
 }
+
+type MenuItemAddedToSubCategory struct {
+	eventutils.EntityEventInfo
+	MenuItemID uuid.UUID
+}

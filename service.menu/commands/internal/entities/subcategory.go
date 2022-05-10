@@ -15,7 +15,8 @@ type SubCategory struct {
 	State SubCategoryState
 }
 type SubCategoryState struct {
-	Name string
+	Name         string
+	MenuItemsIDs []uuid.UUID
 }
 
 // Business Logic
@@ -42,10 +43,22 @@ func (subCategory SubCategory) GetName() string {
 	return subCategory.State.Name
 }
 
+func (subCategory SubCategory) GetMenuItemsIDs() []uuid.UUID {
+	return subCategory.State.MenuItemsIDs
+}
+
 func (subCategory SubCategory) ChangeName(newName string) SubCategory {
 	event := events.SubCategoryNameChanged{
 		EntityEventInfo: eventutils.NewEntityEventInfo(subCategory.ID),
 		NewName:         newName,
+	}
+	return eventutils.AddNewEvent(subCategory, event).(SubCategory)
+}
+
+func (subCategory SubCategory) AddMenuItem(menuItemID uuid.UUID) SubCategory {
+	event := events.MenuItemAddedToSubCategory{
+		EntityEventInfo: eventutils.NewEntityEventInfo(subCategory.ID),
+		MenuItemID:      menuItemID,
 	}
 	return eventutils.AddNewEvent(subCategory, event).(SubCategory)
 }
@@ -58,6 +71,8 @@ func (subCategory SubCategory) ApplyEvent(event eventutils.IEntityEvent) eventut
 		subCategory = subCategory.applySubCategoryCreated(event.(events.SubCategoryCreated))
 	case "SubCategoryNameChanged":
 		subCategory = subCategory.applySubCategoryNameChanged(event.(events.SubCategoryNameChanged))
+	case "MenuItemAddedToSubCategory":
+		subCategory = subCategory.applyMenuItemAddedToSubCategory(event.(events.MenuItemAddedToSubCategory))
 	}
 	return subCategory
 }
@@ -73,6 +88,11 @@ func (subCategory SubCategory) applySubCategoryNameChanged(event events.SubCateg
 	return subCategory
 }
 
+func (subCategory SubCategory) applyMenuItemAddedToSubCategory(event events.MenuItemAddedToSubCategory) SubCategory {
+	subCategory.State.MenuItemsIDs = append(subCategory.State.MenuItemsIDs, event.MenuItemID)
+	return subCategory
+}
+
 func (subCategory SubCategory) DeserializeEvent(jsonData []byte) eventutils.IEvent {
 	eventType, rawData := eventutils.GetRawDataFromSerializedEvent(jsonData)
 	switch eventType {
@@ -82,6 +102,10 @@ func (subCategory SubCategory) DeserializeEvent(jsonData []byte) eventutils.IEve
 		return e
 	case "SubCategoryNameChanged":
 		var e events.SubCategoryNameChanged
+		json.Unmarshal(rawData, &e)
+		return e
+	case "MenuItemAddedToSubCategory":
+		var e events.MenuItemAddedToSubCategory
 		json.Unmarshal(rawData, &e)
 		return e
 	default:
