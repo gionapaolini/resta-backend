@@ -36,6 +36,7 @@ func (api Api) setupRoutes(app *fiber.App) {
 	app.Post("/categories/:id/upload-image", api.UploadCategoryImage)
 
 	app.Post("/subcategories", api.CreateNewSubCategory)
+	app.Post("/subcategories/:id/upload-image", api.UploadSubCategoryImage)
 
 	app.Post("/menuitems", api.CreateNewMenuItem)
 }
@@ -212,7 +213,8 @@ func (api Api) UploadCategoryImage(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to read the uploaded image.")
 	}
 
-	err = saveFile(id, c, file, api.resourcePath)
+	path := filepath.Join(api.resourcePath, "images/categories")
+	err = saveFile(id, c, file, path)
 
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to save the uploaded image.")
@@ -288,9 +290,41 @@ func (api Api) CreateNewMenuItem(c *fiber.Ctx) error {
 	return nil
 }
 
+func (api Api) UploadSubCategoryImage(c *fiber.Ctx) error {
+	id := uuid.FromStringOrNil(c.Params("id"))
+	if id == uuid.Nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid subcategory id")
+	}
+
+	_, err := api.repository.GetEntity(entities.EmptySubCategory(), id)
+	if err != nil {
+		if errors.Is(err, eventutils.ErrEntityNotFound) {
+			return fiber.NewError(fiber.StatusNotFound, "SubCategory not found")
+		} else {
+			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the SubCategory, please try again later.")
+		}
+	}
+
+	file, err := c.FormFile("image")
+
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to read the uploaded image.")
+	}
+
+	path := filepath.Join(api.resourcePath, "images/subcategories")
+	err = saveFile(id, c, file, path)
+
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to save the uploaded image.")
+	}
+
+	c.SendStatus(fiber.StatusOK)
+	return nil
+}
+
 func saveFile(id uuid.UUID, c *fiber.Ctx, file *multipart.FileHeader, resourcePath string) error {
 	imageName := fmt.Sprintf("%s.jpg", id)
-	path := filepath.Join(resourcePath, "images/categories", imageName)
+	path := filepath.Join(resourcePath, imageName)
 	err := c.SaveFile(file, path)
 	return err
 }

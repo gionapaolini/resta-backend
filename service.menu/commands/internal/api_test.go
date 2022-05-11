@@ -216,9 +216,9 @@ func TestUploadCategoryPicture(t *testing.T) {
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	fw, err := writer.CreateFormFile("image", "test_category_image.jpg")
+	fw, err := writer.CreateFormFile("image", "test.jpg")
 	require.NoError(t, err)
-	file, err := os.Open("test_category_image.jpg")
+	file, err := os.Open("test.jpg")
 	require.NoError(t, err)
 	_, err = io.Copy(fw, file)
 	require.NoError(t, err)
@@ -298,4 +298,46 @@ func TestNewMenuItem(t *testing.T) {
 	// Assert
 	require.Equal(t, fiber.StatusCreated, resp.StatusCode)
 	mockEntityRepository.AssertExpectations(t)
+}
+
+func TestUploadSubCategoryPicture(t *testing.T) {
+	// Arrange
+	err := os.MkdirAll("./resources/images/subcategories", 0755)
+	defer os.RemoveAll("./resources")
+	require.NoError(t, err)
+	subcategory := entities.NewSubCategory(utils.GenerateNewUUID())
+	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository.
+		On("GetEntity", entities.EmptySubCategory(), subcategory.ID).
+		Return(subcategory, nil)
+
+	app := fiber.New()
+	SetupApi(app, mockEntityRepository, "./resources")
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	fw, err := writer.CreateFormFile("image", "test.jpg")
+	require.NoError(t, err)
+	file, err := os.Open("test.jpg")
+	require.NoError(t, err)
+	_, err = io.Copy(fw, file)
+	require.NoError(t, err)
+	writer.Close()
+
+	url := fmt.Sprintf("/subcategories/%s/upload-image", subcategory.ID)
+	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body.Bytes()))
+	request.Header.Set("Content-Type", writer.FormDataContentType())
+	require.NoError(t, err)
+
+	// Act
+	resp, err := app.Test(request)
+
+	// Assert
+	require.NoError(t, err)
+	require.Equal(t, fiber.StatusOK, resp.StatusCode)
+	mockEntityRepository.AssertExpectations(t)
+	imageName := fmt.Sprintf("%s.jpg", subcategory.ID)
+	path := filepath.Join("./resources", "images/subcategories", imageName)
+	_, err = os.Stat(path)
+	require.NoError(t, err)
 }

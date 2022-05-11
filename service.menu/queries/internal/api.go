@@ -92,11 +92,20 @@ func (api Api) GetSubCategoriesByIDs(c *fiber.Ctx) error {
 		uuids = append(uuids, parsedID)
 	}
 	subcategories, err := api.menuRepository.GetSubCategoriesByIDs(uuids)
+	subcategories = populateSubCategoryImageURL(subcategories, api)
 
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the subcategories, please try again later.")
 	}
 	return c.JSON(subcategories)
+}
+
+func populateSubCategoryImageURL(categories []SubCategoryView, api Api) (populatedSubCategories []SubCategoryView) {
+	for _, v := range categories {
+		v.ImageURL = fmt.Sprintf("%s/images/subcategories/%s.jpg", api.resourceHost, v.ID)
+		populatedSubCategories = append(populatedSubCategories, v)
+	}
+	return
 }
 
 func populateCategoryImageURL(categories []CategoryView, api Api) (populatedCategories []CategoryView) {

@@ -24,6 +24,7 @@ const migrationsPath = "file:///src/service.menu/queries/internal/migrations"
 
 func main() {
 	os.MkdirAll("/src/resources/images/categories", 0755)
+	os.MkdirAll("/src/resources/images/subcategories", 0755)
 	CreatePersistentSubscription("IntegrationTestGroup", []string{
 		"testEvent1",
 	})

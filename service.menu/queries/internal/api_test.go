@@ -221,3 +221,53 @@ func TestGetSubCategoriesByIDsApi(t *testing.T) {
 	require.Equal(t, categories[0].ID, subCategoriesResponse[0].ID)
 	require.Equal(t, categories[0].Name, subCategoriesResponse[0].Name)
 }
+
+func TestGetSubCategoriesByIDsApi_ShouldHaveImageURL(t *testing.T) {
+	// Arrange
+	subCategories := []SubCategoryView{
+		{
+			ID:   utils.GenerateNewUUID(),
+			Name: "TestName1",
+		},
+		{
+			ID:   utils.GenerateNewUUID(),
+			Name: "TestName2",
+		},
+	}
+
+	mockMenuRepository := new(MockMenuRepository)
+	mockMenuRepository.
+		On("GetSubCategoriesByIDs", []uuid.UUID{
+			subCategories[0].ID,
+			subCategories[1].ID,
+		}).
+		Return(subCategories, nil)
+
+	app := fiber.New()
+
+	err := os.MkdirAll("./resources/images/subcategories", 0755)
+	os.OpenFile(fmt.Sprintf("./resources/images/subcategories/%s.jpg", subCategories[0].ID), os.O_RDONLY|os.O_CREATE, 0666)
+	os.OpenFile(fmt.Sprintf("./resources/images/subcategories/%s.jpg", subCategories[1].ID), os.O_RDONLY|os.O_CREATE, 0666)
+	defer os.RemoveAll("./resources")
+
+	SetupApi(app, mockMenuRepository, "./resources", "http://localhost:10001")
+
+	url := fmt.Sprintf("/subcategories/by-ids?id=%s,%s", subCategories[0].ID, subCategories[1].ID)
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	require.NoError(t, err)
+
+	// Act
+	resp, _ := app.Test(request)
+
+	// Assert
+	require.Equal(t, fiber.StatusOK, resp.StatusCode)
+
+	response, err := ioutil.ReadAll(resp.Body)
+	require.NoError(t, err)
+
+	var subCategoriesResponse []SubCategoryView
+	err = json.Unmarshal(response, &subCategoriesResponse)
+
+	require.Equal(t, subCategoriesResponse[0].ImageURL, fmt.Sprintf("http://localhost:10001/images/subcategories/%s.jpg", subCategories[0].ID))
+	require.Equal(t, subCategoriesResponse[1].ImageURL, fmt.Sprintf("http://localhost:10001/images/subcategories/%s.jpg", subCategories[1].ID))
+}
