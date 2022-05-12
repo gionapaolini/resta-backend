@@ -39,8 +39,17 @@ func EmptyMenuItem() MenuItem {
 	}
 }
 
-func (category MenuItem) GetName() string {
-	return category.State.Name
+func (menuItem MenuItem) GetName() string {
+	return menuItem.State.Name
+}
+
+func (menuItem MenuItem) ChangeName(newName string) MenuItem {
+	event := events.MenuItemNameChanged{
+		EntityEventInfo: eventutils.NewEntityEventInfo(menuItem.GetID()),
+		NewName:         newName,
+	}
+
+	return eventutils.AddNewEvent(menuItem, event).(MenuItem)
 }
 
 // Events
@@ -49,6 +58,9 @@ func (menuItem MenuItem) ApplyEvent(event eventutils.IEntityEvent) eventutils.IE
 	switch eventType {
 	case "MenuItemCreated":
 		menuItem = menuItem.applyMenuItemCreated(event.(events.MenuItemCreated))
+	case "MenuItemNameChanged":
+		menuItem = menuItem.applyMenuItemNameChanged(event.(events.MenuItemNameChanged))
+
 	}
 	return menuItem
 }
@@ -59,11 +71,21 @@ func (menuItem MenuItem) applyMenuItemCreated(event events.MenuItemCreated) Menu
 	return menuItem
 }
 
+func (menuItem MenuItem) applyMenuItemNameChanged(event events.MenuItemNameChanged) MenuItem {
+	menuItem.ID = event.EntityID
+	menuItem.State.Name = event.NewName
+	return menuItem
+}
+
 func (menuItem MenuItem) DeserializeEvent(jsonData []byte) eventutils.IEvent {
 	eventType, rawData := eventutils.GetRawDataFromSerializedEvent(jsonData)
 	switch eventType {
 	case "MenuItemCreated":
 		var e events.MenuItemCreated
+		json.Unmarshal(rawData, &e)
+		return e
+	case "MenuItemNameChanged":
+		var e events.MenuItemNameChanged
 		json.Unmarshal(rawData, &e)
 		return e
 	default:

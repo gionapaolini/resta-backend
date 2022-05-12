@@ -39,6 +39,7 @@ func (api Api) setupRoutes(app *fiber.App) {
 	app.Post("/subcategories/:id/upload-image", api.UploadSubCategoryImage)
 
 	app.Post("/menuitems", api.CreateNewMenuItem)
+	app.Post("/menuitems/:id/change-name", api.ChangeMenuItemName)
 }
 
 func (api Api) CreateNewMenu(c *fiber.Ctx) error {
@@ -327,4 +328,36 @@ func saveFile(id uuid.UUID, c *fiber.Ctx, file *multipart.FileHeader, resourcePa
 	path := filepath.Join(resourcePath, imageName)
 	err := c.SaveFile(file, path)
 	return err
+}
+
+type ChangeMenuItemNameRequest struct {
+	NewName string `json:"newName"`
+}
+
+func (api Api) ChangeMenuItemName(c *fiber.Ctx) error {
+	id := uuid.FromStringOrNil(c.Params("id"))
+	if id == uuid.Nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid menuitem id")
+	}
+
+	reqBody := new(ChangeMenuItemNameRequest)
+	if err := c.BodyParser(reqBody); err != nil {
+		return err
+	}
+
+	menuItem, err := api.repository.GetEntity(entities.EmptyMenuItem(), id)
+	if err != nil {
+		if errors.Is(err, eventutils.ErrEntityNotFound) {
+			return fiber.NewError(fiber.StatusNotFound, "MenuItem not found")
+		} else {
+			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the menu item, please try again later.")
+		}
+	}
+	menuItem = menuItem.(entities.MenuItem).ChangeName(reqBody.NewName)
+	err = api.repository.SaveEntity(menuItem)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the changes. Please try again later")
+	}
+	c.SendStatus(fiber.StatusOK)
+	return nil
 }

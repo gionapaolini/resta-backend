@@ -10,3 +10,8 @@ type MenuItemCreated struct {
 	Name                string
 	ParentSubCategoryID uuid.UUID
 }
+
+type MenuItemNameChanged struct {
+	eventutils.EntityEventInfo
+	NewName string
+}

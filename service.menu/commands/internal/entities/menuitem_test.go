@@ -25,3 +25,16 @@ func TestCreateMenuItem(t *testing.T) {
 	require.Equal(t, menuItem.ID, menuItem.GetLatestEvents()[0].(eventutils.IEntityEvent).GetEntityID())
 	require.False(t, menuItem.IsDeleted)
 }
+
+func TestChangeMenuItemName(t *testing.T) {
+	// Arrange
+	menuItemID := utils.GenerateNewUUID()
+	menuItem := NewMenuItem(menuItemID)
+
+	// Act
+	menuItem = menuItem.ChangeName("NewName")
+
+	// Assert
+	require.Equal(t, "NewName", menuItem.GetName())
+	require.IsType(t, events.MenuItemNameChanged{}, menuItem.GetLatestEvents()[len(menuItem.GetLatestEvents())-1])
+}

@@ -341,3 +341,36 @@ func TestUploadSubCategoryPicture(t *testing.T) {
 	_, err = os.Stat(path)
 	require.NoError(t, err)
 }
+
+func TestChangeMenuItemName(t *testing.T) {
+	// Arrange
+	menuItem := entities.NewMenuItem(utils.GenerateNewUUID())
+	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository.
+		On("GetEntity", entities.EmptyMenuItem(), menuItem.ID).
+		Return(menuItem, nil)
+
+	mockEntityRepository.
+		On("SaveEntity", mock.MatchedBy(
+			func(menu entities.MenuItem) bool {
+				return menu.GetName() == "NewMenuItemName"
+			},
+		)).
+		Return(nil)
+
+	app := fiber.New()
+	SetupApi(app, mockEntityRepository, "")
+
+	jsonBody := `{"newName": "NewMenuItemName"}`
+	url := fmt.Sprintf("/menuitems/%s/change-name", menuItem.ID)
+	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(jsonBody))
+	request.Header.Add("content-type", "application/json")
+	require.NoError(t, err)
+
+	// Act
+	resp, _ := app.Test(request)
+
+	// Assert
+	require.Equal(t, fiber.StatusOK, resp.StatusCode)
+	mockEntityRepository.AssertExpectations(t)
+}
