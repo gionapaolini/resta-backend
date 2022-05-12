@@ -181,7 +181,7 @@ func TestGetCategoriesByIDsApi_ShouldHaveImageURL(t *testing.T) {
 
 func TestGetSubCategoriesByIDsApi(t *testing.T) {
 	// Arrange
-	categories := []SubCategoryView{
+	subcategories := []SubCategoryView{
 		{
 			ID:   utils.GenerateNewUUID(),
 			Name: "TestName1",
@@ -194,15 +194,15 @@ func TestGetSubCategoriesByIDsApi(t *testing.T) {
 	mockMenuRepository := new(MockMenuRepository)
 	mockMenuRepository.
 		On("GetSubCategoriesByIDs", []uuid.UUID{
-			categories[0].ID,
-			categories[1].ID,
+			subcategories[0].ID,
+			subcategories[1].ID,
 		}).
-		Return(categories, nil)
+		Return(subcategories, nil)
 
 	app := fiber.New()
 	SetupApi(app, mockMenuRepository, "", "")
 
-	url := fmt.Sprintf("/subcategories/by-ids?id=%s,%s", categories[0].ID, categories[1].ID)
+	url := fmt.Sprintf("/subcategories/by-ids?id=%s,%s", subcategories[0].ID, subcategories[1].ID)
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	require.NoError(t, err)
 
@@ -218,8 +218,8 @@ func TestGetSubCategoriesByIDsApi(t *testing.T) {
 	var subCategoriesResponse []SubCategoryView
 	err = json.Unmarshal(response, &subCategoriesResponse)
 
-	require.Equal(t, categories[0].ID, subCategoriesResponse[0].ID)
-	require.Equal(t, categories[0].Name, subCategoriesResponse[0].Name)
+	require.Equal(t, subcategories[0].ID, subCategoriesResponse[0].ID)
+	require.Equal(t, subcategories[0].Name, subCategoriesResponse[0].Name)
 }
 
 func TestGetSubCategoriesByIDsApi_ShouldHaveImageURL(t *testing.T) {
@@ -270,4 +270,47 @@ func TestGetSubCategoriesByIDsApi_ShouldHaveImageURL(t *testing.T) {
 
 	require.Equal(t, subCategoriesResponse[0].ImageURL, fmt.Sprintf("http://localhost:10001/images/subcategories/%s.jpg", subCategories[0].ID))
 	require.Equal(t, subCategoriesResponse[1].ImageURL, fmt.Sprintf("http://localhost:10001/images/subcategories/%s.jpg", subCategories[1].ID))
+}
+
+func TestGetMenuItemByIDs(t *testing.T) {
+	// Arrange
+	menuItems := []MenuItemView{
+		{
+			ID:   utils.GenerateNewUUID(),
+			Name: "TestName1",
+		},
+		{
+			ID:   utils.GenerateNewUUID(),
+			Name: "TestName2",
+		},
+	}
+	mockMenuRepository := new(MockMenuRepository)
+	mockMenuRepository.
+		On("GetMenuItemsByIDs", []uuid.UUID{
+			menuItems[0].ID,
+			menuItems[1].ID,
+		}).
+		Return(menuItems, nil)
+
+	app := fiber.New()
+	SetupApi(app, mockMenuRepository, "", "")
+
+	url := fmt.Sprintf("/menuitems/by-ids?id=%s,%s", menuItems[0].ID, menuItems[1].ID)
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	require.NoError(t, err)
+
+	// Act
+	resp, _ := app.Test(request, 100000)
+
+	// Assert
+	require.Equal(t, fiber.StatusOK, resp.StatusCode)
+
+	response, err := ioutil.ReadAll(resp.Body)
+	require.NoError(t, err)
+
+	var menuItemResponse []SubCategoryView
+	err = json.Unmarshal(response, &menuItemResponse)
+
+	require.Equal(t, menuItems[0].ID, menuItemResponse[0].ID)
+	require.Equal(t, menuItems[0].Name, menuItemResponse[0].Name)
 }

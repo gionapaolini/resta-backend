@@ -26,6 +26,7 @@ type IMenuRepository interface {
 	AddSubCategoryToCategory(categoryID, subCategoryID uuid.UUID) error
 	CreateMenuItem(menuItemID uuid.UUID, menuItemName string) error
 	AddMenuItemToSubCategory(subCategoryID, menuItemID uuid.UUID) error
+	GetMenuItemsByIDs(menuItemsIDs []uuid.UUID) ([]MenuItemView, error)
 }
 
 type MenuRepository struct {
@@ -515,6 +516,42 @@ func (repo MenuRepository) GetMenuItem(menuItemID uuid.UUID) (MenuItemView, erro
 		return MenuItemView{}, err
 	}
 	return menuItemView, nil
+}
+
+func (repo MenuRepository) GetMenuItemsByIDs(menuItemsIDs []uuid.UUID) ([]MenuItemView, error) {
+	db, err := sql.Open("postgres", repo.connectionString)
+	if err != nil {
+		return []MenuItemView{}, err
+	}
+	defer db.Close()
+
+	idListString := makeStringList(menuItemsIDs)
+
+	query := `
+		SELECT *
+		FROM menuitems
+		WHERE id IN(` + idListString + `);
+	`
+
+	rows, err := db.Query(query)
+	defer rows.Close()
+
+	menuItems := []MenuItemView{}
+
+	for rows.Next() {
+		var menuItemView MenuItemView
+		err = rows.Scan(
+			&menuItemView.ID,
+			&menuItemView.Name,
+		)
+
+		if err != nil {
+			return []MenuItemView{}, err
+		}
+		menuItems = append(menuItems, menuItemView)
+	}
+
+	return menuItems, nil
 }
 
 func (repo MenuRepository) RemoveMenuItemFromSubCategory(subCategoryID, menuItemID uuid.UUID) error {

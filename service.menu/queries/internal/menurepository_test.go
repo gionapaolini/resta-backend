@@ -402,3 +402,26 @@ func TestGetSubCategoriesByIDs_ShouldHaveMenuItemsIDsPopulated(t *testing.T) {
 	require.Contains(t, categories[0].MenuItemsIDs, menuItem1)
 	require.Contains(t, categories[0].MenuItemsIDs, menuItem2)
 }
+
+func TestGetMenuItemsByIDs(t *testing.T) {
+	// Arrange
+	viewRepository := NewMenuRepository(pgConnectionString)
+	menuItemID1, menuItemID2, menuItemName :=
+		utils.GenerateNewUUID(),
+		utils.GenerateNewUUID(),
+		"TestName"
+
+	defer viewRepository.DeleteMenuItem(menuItemID1)
+	defer viewRepository.DeleteMenuItem(menuItemID2)
+	viewRepository.CreateMenuItem(menuItemID1, menuItemName)
+	viewRepository.CreateMenuItem(menuItemID2, menuItemName)
+
+	// Act
+	menuItems, err := viewRepository.GetMenuItemsByIDs([]uuid.UUID{menuItemID1, menuItemID2})
+
+	// Assert
+	require.NoError(t, err)
+	require.Len(t, menuItems, 2)
+	require.Equal(t, menuItems[0].ID, menuItemID1)
+	require.Equal(t, menuItems[1].ID, menuItemID2)
+}
