@@ -31,8 +31,8 @@ func (api Api) setupRoutes(app *fiber.App, resourcePath string) {
 
 	app.Get("/subcategories/by-ids", api.GetSubCategoriesByIDs)
 
-	path := filepath.Join(resourcePath, "images/categories")
-	app.Static("/images/categories", path)
+	path := filepath.Join(resourcePath, "images")
+	app.Static("/images", path)
 }
 
 func (api Api) GetMenu(c *fiber.Ctx) error {
