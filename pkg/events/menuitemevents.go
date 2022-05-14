@@ -1,6 +1,8 @@
 package events
 
 import (
+	"time"
+
 	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/gofrs/uuid"
 )
@@ -14,4 +16,9 @@ type MenuItemCreated struct {
 type MenuItemNameChanged struct {
 	eventutils.EntityEventInfo
 	NewName string
+}
+
+type MenuItemEstimatedPreparationTimeChanged struct {
+	eventutils.EntityEventInfo
+	NewEstimate time.Duration
 }

@@ -2,6 +2,7 @@ package entities
 
 import (
 	"testing"
+	"time"
 
 	"github.com/Resta-Inc/resta/pkg/events"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
@@ -37,4 +38,17 @@ func TestChangeMenuItemName(t *testing.T) {
 	// Assert
 	require.Equal(t, "NewName", menuItem.GetName())
 	require.IsType(t, events.MenuItemNameChanged{}, menuItem.GetLatestEvents()[len(menuItem.GetLatestEvents())-1])
+}
+
+func TestChangeMenuItemEstimatedPreparationTime(t *testing.T) {
+	// Arrange
+	menuItemID := utils.GenerateNewUUID()
+	menuItem := NewMenuItem(menuItemID)
+
+	// Act
+	menuItem = menuItem.ChangeEstimatedPreparationTime(10 * time.Minute)
+
+	// Assert
+	require.Equal(t, 10*time.Minute, menuItem.GetEstimatedPreparationtime())
+	require.IsType(t, events.MenuItemEstimatedPreparationTimeChanged{}, menuItem.GetLatestEvents()[len(menuItem.GetLatestEvents())-1])
 }
