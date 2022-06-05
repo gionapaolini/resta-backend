@@ -1,4 +1,4 @@
-module server
+module experiment1
 
 go 1.18
 
