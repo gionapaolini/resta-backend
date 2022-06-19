@@ -9,9 +9,3 @@ type Entity struct {
 	Events    []IEvent
 	IsDeleted bool
 }
-
-func reconstructFromEvents(entity IReconstructible, events []Event) {
-	for _, event := range events {
-		entity.ApplyEvent(event)
-	}
-}
