@@ -14,10 +14,6 @@ type Event struct {
 	Data []byte
 }
 
-type IEventInfo interface {
-	GetEventID() uuid.UUID
-}
-
 type EventInfo struct {
 	EntityID, EventID uuid.UUID
 	CreatedAt         time.Time
@@ -25,6 +21,14 @@ type EventInfo struct {
 
 func (ei EventInfo) GetEventID() uuid.UUID {
 	return ei.EventID
+}
+
+func (ei EventInfo) GetEntityID() uuid.UUID {
+	return ei.EntityID
+}
+
+func (ei EventInfo) GetTimeStamp() time.Time {
+	return ei.CreatedAt
 }
 
 func NewEventInfo(entityID uuid.UUID) EventInfo {
@@ -39,10 +43,13 @@ func NewEventInfo(entityID uuid.UUID) EventInfo {
 
 type IReconstructible interface {
 	ApplyEvent(event Event)
+	AppendEvent(event IEvent)
 }
 
 type IEvent interface {
 	GetEventID() uuid.UUID
+	GetEntityID() uuid.UUID
+	GetTimeStamp() time.Time
 }
 
 func ReconstructFromEvents(entity IReconstructible, events []Event) {
@@ -59,4 +66,10 @@ func SerializedEvent(eventObj IEvent) Event {
 		Data: bytes,
 	}
 	return event
+}
+
+func AddEvent(event IEvent, obj IReconstructible) {
+	serializedEvent := SerializedEvent(event)
+	obj.ApplyEvent(serializedEvent)
+	obj.AppendEvent(event)
 }

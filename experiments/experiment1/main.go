@@ -51,9 +51,8 @@ type Event struct {
 }
 
 type Entity struct {
-	ID        uuid.UUID
-	Events    []Event
-	NewEvents []Event
+	ID     uuid.UUID
+	Events []Event
 }
 
 type MenuItem struct {
@@ -74,7 +73,7 @@ func NewMenu() *MenuItem {
 	event := createSerializedEvent(menuCreatedEvent)
 	menuItem := &MenuItem{}
 	menuItem.ApplyEvent(event)
-	menuItem.NewEvents = append(menuItem.NewEvents, event)
+	menuItem.Events = append(menuItem.Events, event)
 	return menuItem
 }
 
@@ -95,7 +94,7 @@ func (mi *MenuItem) ChangeName(newName string) {
 	}
 	event := createSerializedEvent(menuNameChangedEvent)
 	mi.ApplyEvent(event)
-	mi.NewEvents = append(mi.NewEvents, event)
+	mi.Events = append(mi.Events, event)
 }
 
 func (mi *MenuItem) ApplyEvent(event Event) {
@@ -115,7 +114,6 @@ func (mi *MenuItem) ApplyEvent(event Event) {
 	default:
 		return
 	}
-	mi.Events = append(mi.Events, event)
 }
 
 func applyMenuCreated(mi *MenuItem, e MenuCreated) {
@@ -148,7 +146,7 @@ func NewPreparedMenuItem() *PreparedMenuItem {
 	preparedMenuItem := &PreparedMenuItem{}
 	preparedMenuItem.MenuItem = menuItem
 	preparedMenuItem.ApplyEvent(event)
-	preparedMenuItem.NewEvents = append(preparedMenuItem.NewEvents, event)
+	preparedMenuItem.Events = append(preparedMenuItem.Events, event)
 	return preparedMenuItem
 }
 
@@ -159,7 +157,7 @@ func (mi *PreparedMenuItem) ChangePreparationTime(newTime time.Duration) {
 	}
 	event := createSerializedEvent(menuEstimatedPreparationTimeChanged)
 	mi.ApplyEvent(event)
-	mi.NewEvents = append(mi.NewEvents, event)
+	mi.Events = append(mi.Events, event)
 }
 
 func (mi *PreparedMenuItem) ApplyEvent(event Event) {
@@ -179,7 +177,6 @@ func (mi *PreparedMenuItem) ApplyEvent(event Event) {
 		mi.MenuItem.ApplyEvent(event)
 		return
 	}
-	mi.Events = append(mi.Events, event)
 }
 
 func applyMenuItemSpecializedIntoPreparedMenuItem(mi *PreparedMenuItem, e MenuItemSpecializedIntoPreparedMenuItem) {
