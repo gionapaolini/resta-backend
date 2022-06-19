@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/Resta-Inc/resta/pkg/events2"
+	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/stretchr/testify/require"
@@ -76,4 +77,35 @@ func Test_AddCategory(t *testing.T) {
 	latestEvent := menu.Events[len(menu.Events)-1]
 	require.Contains(t, menu.GetCategoriesIDs(), categoryID)
 	require.IsType(t, events2.CategoryAddedToMenu{}, latestEvent)
+}
+
+func Test_DeserializeMenuEvent(t *testing.T) {
+	// Arrange
+	events := []eventutils2.IEvent{
+		events2.MenuCreated{
+			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+		},
+		events2.MenuEnabled{
+			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+		},
+		events2.MenuDisabled{
+			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+		},
+		events2.MenuNameChanged{
+			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+		},
+		events2.CategoryAddedToMenu{
+			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+		},
+	}
+
+	for _, event := range events {
+		serialized := eventutils2.SerializedEvent(event)
+
+		// Act
+		deserialized := NewMenu().DeserializeEvent(serialized)
+
+		// Assert
+		require.Equal(t, event, deserialized)
+	}
 }

@@ -42,7 +42,8 @@ func NewEventInfo(entityID uuid.UUID) EventInfo {
 }
 
 type IReconstructible interface {
-	ApplyEvent(event Event)
+	DeserializeEvent(event Event) IEvent
+	ApplyEvent(event IEvent)
 	AppendEvent(event IEvent)
 }
 
@@ -54,7 +55,8 @@ type IEvent interface {
 
 func ReconstructFromEvents(entity IReconstructible, events []Event) {
 	for _, event := range events {
-		entity.ApplyEvent(event)
+		deserializedEvent := entity.DeserializeEvent(event)
+		entity.ApplyEvent(deserializedEvent)
 	}
 }
 
@@ -69,7 +71,6 @@ func SerializedEvent(eventObj IEvent) Event {
 }
 
 func AddEvent(event IEvent, obj IReconstructible) {
-	serializedEvent := SerializedEvent(event)
-	obj.ApplyEvent(serializedEvent)
+	obj.ApplyEvent(event)
 	obj.AppendEvent(event)
 }

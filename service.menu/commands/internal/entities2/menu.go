@@ -84,24 +84,45 @@ func (menu *Menu) AppendEvent(event eventutils2.IEvent) {
 	menu.Events = append(menu.Events, event)
 }
 
-func (menu *Menu) ApplyEvent(event eventutils2.Event) {
+func (menu *Menu) DeserializeEvent(event eventutils2.Event) eventutils2.IEvent {
 	switch event.Name {
 	case "MenuCreated":
 		var e events2.MenuCreated
 		json.Unmarshal(event.Data, &e)
-		applyMenuCreated(menu, e)
+		return e
+	case "MenuEnabled":
+		var e events2.MenuEnabled
+		json.Unmarshal(event.Data, &e)
+		return e
+	case "MenuDisabled":
+		var e events2.MenuDisabled
+		json.Unmarshal(event.Data, &e)
+		return e
+	case "MenuNameChanged":
+		var e events2.MenuNameChanged
+		json.Unmarshal(event.Data, &e)
+		return e
+	case "CategoryAddedToMenu":
+		var e events2.CategoryAddedToMenu
+		json.Unmarshal(event.Data, &e)
+		return e
+	}
+	return nil
+}
+
+func (menu *Menu) ApplyEvent(event eventutils2.IEvent) {
+	eventType := utils.GetType(event)
+	switch eventType {
+	case "MenuCreated":
+		applyMenuCreated(menu, event.(events2.MenuCreated))
 	case "MenuEnabled":
 		applyMenuEnabled(menu)
 	case "MenuDisabled":
 		applyMenuDisabled(menu)
 	case "MenuNameChanged":
-		var e events2.MenuNameChanged
-		json.Unmarshal(event.Data, &e)
-		applyMenuNameChanged(menu, e)
+		applyMenuNameChanged(menu, event.(events2.MenuNameChanged))
 	case "CategoryAddedToMenu":
-		var e events2.CategoryAddedToMenu
-		json.Unmarshal(event.Data, &e)
-		applyCategoryAddedToMenu(menu, e)
+		applyCategoryAddedToMenu(menu, event.(events2.CategoryAddedToMenu))
 	}
 }
 
