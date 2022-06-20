@@ -17,6 +17,12 @@ func NewEsdbClient(connectionString string) (*esdb.Client, error) {
 	return db, err
 }
 
+type IEventStore interface {
+	SaveEventsToNewStream(streamName string, events []Event) (*esdb.WriteResult, error)
+	SaveEventsToExistingStream(streamName string, events []Event) (*esdb.WriteResult, error)
+	GetAllEventsByStreamName(streamName string) ([]Event, error)
+}
+
 type EventStore struct {
 	db *esdb.Client
 }

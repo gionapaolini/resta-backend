@@ -41,10 +41,37 @@ func NewEventInfo(entityID uuid.UUID) EventInfo {
 	return eventInfo
 }
 
+type Entity struct {
+	ID        uuid.UUID
+	Events    []IEvent
+	IsDeleted bool
+	New       bool
+}
+
+func (e Entity) GetEvents() []IEvent {
+	return e.Events
+}
+
+func (e Entity) GetID() uuid.UUID {
+	return e.ID
+}
+
+func (e *Entity) SetNew() {
+	e.New = true
+}
+
+func (e Entity) IsNew() bool {
+	return e.New
+}
+
 type IReconstructible interface {
+	GetID() uuid.UUID
+	GetEvents() []IEvent
 	DeserializeEvent(event Event) IEvent
 	ApplyEvent(event IEvent)
 	AppendEvent(event IEvent)
+	IsNew() bool
+	SetNew()
 }
 
 type IEvent interface {
