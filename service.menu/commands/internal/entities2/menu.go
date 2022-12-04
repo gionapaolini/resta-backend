@@ -84,7 +84,7 @@ func (menu *Menu) AppendEvent(event eventutils2.IEvent) {
 	menu.Events = append(menu.Events, event)
 }
 
-func (menu *Menu) DeserializeEvent(event eventutils2.Event) eventutils2.IEvent {
+func (menu Menu) DeserializeEvent(event eventutils2.Event) eventutils2.IEvent {
 	switch event.Name {
 	case "MenuCreated":
 		var e events2.MenuCreated
