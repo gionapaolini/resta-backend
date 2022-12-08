@@ -6,18 +6,19 @@ import (
 	"mime/multipart"
 	"path/filepath"
 
-	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
+	"github.com/Resta-Inc/resta/menu/commands/internal/entities2"
 	"github.com/Resta-Inc/resta/pkg/eventutils"
+	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofrs/uuid"
 )
 
 type Api struct {
-	repository   eventutils.IEntityRepository
+	repository   eventutils2.IEntityRepository
 	resourcePath string
 }
 
-func SetupApi(app *fiber.App, repo eventutils.IEntityRepository, resourcePath string) {
+func SetupApi(app *fiber.App, repo eventutils2.IEntityRepository, resourcePath string) {
 	api := Api{
 		repository:   repo,
 		resourcePath: resourcePath,
@@ -43,7 +44,7 @@ func (api Api) setupRoutes(app *fiber.App) {
 }
 
 func (api Api) CreateNewMenu(c *fiber.Ctx) error {
-	menu := entities.NewMenu()
+	menu := entities2.NewMenu()
 	err := api.repository.SaveEntity(menu)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the new menu. Please try again later")
@@ -57,7 +58,7 @@ func (api Api) EnableMenu(c *fiber.Ctx) error {
 	if id == uuid.Nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid menu id")
 	}
-	menu, err := api.repository.GetEntity(entities.EmptyMenu(), id)
+	menu, err := api.repository.GetEntity(&entities2.Menu{}, id)
 	if err != nil {
 		if errors.Is(err, eventutils.ErrEntityNotFound) {
 			return fiber.NewError(fiber.StatusNotFound, "Menu not found")
@@ -65,7 +66,7 @@ func (api Api) EnableMenu(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the menu, please try again later.")
 		}
 	}
-	menu = menu.(entities.Menu).Enable()
+	menu.(*entities2.Menu).Enable()
 	err = api.repository.SaveEntity(menu)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the changes. Please try again later")
@@ -79,7 +80,7 @@ func (api Api) DisableMenu(c *fiber.Ctx) error {
 	if id == uuid.Nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid menu id")
 	}
-	menu, err := api.repository.GetEntity(entities.EmptyMenu(), id)
+	menu, err := api.repository.GetEntity(&entities2.Menu{}, id)
 	if err != nil {
 		if errors.Is(err, eventutils.ErrEntityNotFound) {
 			return fiber.NewError(fiber.StatusNotFound, "Menu not found")
@@ -87,7 +88,7 @@ func (api Api) DisableMenu(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the menu, please try again later.")
 		}
 	}
-	menu = menu.(entities.Menu).Disable()
+	menu.(*entities2.Menu).Disable()
 	err = api.repository.SaveEntity(menu)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the changes. Please try again later")
@@ -111,7 +112,7 @@ func (api Api) ChangeMenuName(c *fiber.Ctx) error {
 		return err
 	}
 
-	menu, err := api.repository.GetEntity(entities.EmptyMenu(), id)
+	menu, err := api.repository.GetEntity(&entities2.Menu{}, id)
 	if err != nil {
 		if errors.Is(err, eventutils.ErrEntityNotFound) {
 			return fiber.NewError(fiber.StatusNotFound, "Menu not found")
@@ -119,7 +120,7 @@ func (api Api) ChangeMenuName(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the menu, please try again later.")
 		}
 	}
-	menu = menu.(entities.Menu).ChangeName(reqBody.NewName)
+	menu.(*entities2.Menu).ChangeName(reqBody.NewName)
 	err = api.repository.SaveEntity(menu)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the changes. Please try again later")
@@ -141,7 +142,7 @@ func (api Api) CreateNewCategory(c *fiber.Ctx) error {
 	if menuID == uuid.Nil {
 		return fiber.NewError(fiber.StatusBadRequest, "menuID is not valid")
 	}
-	menu, err := api.repository.GetEntity(entities.EmptyMenu(), menuID)
+	menu, err := api.repository.GetEntity(&entities2.Menu{}, menuID)
 	if err != nil {
 		if errors.Is(err, eventutils.ErrEntityNotFound) {
 			return fiber.NewError(fiber.StatusNotFound, "Menu not found")
@@ -149,10 +150,10 @@ func (api Api) CreateNewCategory(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the menu, please try again later.")
 		}
 	}
-	if menu.(entities.Menu).IsDeleted {
+	if menu.(*entities2.Menu).IsDeleted {
 		return fiber.NewError(fiber.StatusNotFound, "Menu not found")
 	}
-	category := entities.NewCategory(menuID)
+	category := entities2.NewCategory(menuID)
 	err = api.repository.SaveEntity(category)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the changes. Please try again later")
@@ -176,7 +177,7 @@ func (api Api) ChangeCategoryName(c *fiber.Ctx) error {
 		return err
 	}
 
-	category, err := api.repository.GetEntity(entities.EmptyCategory(), id)
+	category, err := api.repository.GetEntity(&entities2.Category{}, id)
 	if err != nil {
 		if errors.Is(err, eventutils.ErrEntityNotFound) {
 			return fiber.NewError(fiber.StatusNotFound, "Category not found")
@@ -184,7 +185,7 @@ func (api Api) ChangeCategoryName(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the category, please try again later.")
 		}
 	}
-	category = category.(entities.Category).ChangeName(reqBody.NewName)
+	category.(*entities2.Category).ChangeName(reqBody.NewName)
 	err = api.repository.SaveEntity(category)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the changes. Please try again later")
@@ -199,7 +200,7 @@ func (api Api) UploadCategoryImage(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid category id")
 	}
 
-	_, err := api.repository.GetEntity(entities.EmptyCategory(), id)
+	_, err := api.repository.GetEntity(&entities2.Category{}, id)
 	if err != nil {
 		if errors.Is(err, eventutils.ErrEntityNotFound) {
 			return fiber.NewError(fiber.StatusNotFound, "Category not found")
@@ -238,7 +239,7 @@ func (api Api) CreateNewSubCategory(c *fiber.Ctx) error {
 	if categoryID == uuid.Nil {
 		return fiber.NewError(fiber.StatusBadRequest, "categoryID is not valid")
 	}
-	category, err := api.repository.GetEntity(entities.EmptyCategory(), categoryID)
+	category, err := api.repository.GetEntity(&entities2.Category{}, categoryID)
 	if err != nil {
 		if errors.Is(err, eventutils.ErrEntityNotFound) {
 			return fiber.NewError(fiber.StatusNotFound, "Category not found")
@@ -246,10 +247,10 @@ func (api Api) CreateNewSubCategory(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the category, please try again later.")
 		}
 	}
-	if category.(entities.Category).IsDeleted {
+	if category.(*entities2.Category).IsDeleted {
 		return fiber.NewError(fiber.StatusNotFound, "Category not found")
 	}
-	subcategory := entities.NewSubCategory(categoryID)
+	subcategory := entities2.NewSubCategory(categoryID)
 	err = api.repository.SaveEntity(subcategory)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the changes. Please try again later")
@@ -271,7 +272,7 @@ func (api Api) CreateNewMenuItem(c *fiber.Ctx) error {
 	if subCategoryID == uuid.Nil {
 		return fiber.NewError(fiber.StatusBadRequest, "subCategoryID is not valid")
 	}
-	subCategory, err := api.repository.GetEntity(entities.EmptySubCategory(), subCategoryID)
+	subCategory, err := api.repository.GetEntity(&entities2.SubCategory{}, subCategoryID)
 	if err != nil {
 		if errors.Is(err, eventutils.ErrEntityNotFound) {
 			return fiber.NewError(fiber.StatusNotFound, "SubCategory not found")
@@ -279,10 +280,10 @@ func (api Api) CreateNewMenuItem(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the SubCategory, please try again later.")
 		}
 	}
-	if subCategory.(entities.SubCategory).IsDeleted {
+	if subCategory.(*entities2.SubCategory).IsDeleted {
 		return fiber.NewError(fiber.StatusNotFound, "SubCategory not found")
 	}
-	menuItem := entities.NewMenuItem(subCategoryID)
+	menuItem := entities2.NewMenuItem(subCategoryID)
 	err = api.repository.SaveEntity(menuItem)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the changes. Please try again later")
@@ -297,7 +298,7 @@ func (api Api) UploadSubCategoryImage(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid subcategory id")
 	}
 
-	_, err := api.repository.GetEntity(entities.EmptySubCategory(), id)
+	_, err := api.repository.GetEntity(&entities2.SubCategory{}, id)
 	if err != nil {
 		if errors.Is(err, eventutils.ErrEntityNotFound) {
 			return fiber.NewError(fiber.StatusNotFound, "SubCategory not found")
@@ -345,7 +346,7 @@ func (api Api) ChangeMenuItemName(c *fiber.Ctx) error {
 		return err
 	}
 
-	menuItem, err := api.repository.GetEntity(entities.EmptyMenuItem(), id)
+	menuItem, err := api.repository.GetEntity(&entities2.MenuItem{}, id)
 	if err != nil {
 		if errors.Is(err, eventutils.ErrEntityNotFound) {
 			return fiber.NewError(fiber.StatusNotFound, "MenuItem not found")
@@ -353,7 +354,7 @@ func (api Api) ChangeMenuItemName(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when trying to find the menu item, please try again later.")
 		}
 	}
-	menuItem = menuItem.(entities.MenuItem).ChangeName(reqBody.NewName)
+	menuItem.(*entities2.MenuItem).ChangeName(reqBody.NewName)
 	err = api.repository.SaveEntity(menuItem)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "Something went wrong when saving the changes. Please try again later")

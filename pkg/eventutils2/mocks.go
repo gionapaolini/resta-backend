@@ -2,6 +2,7 @@ package eventutils2
 
 import (
 	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -26,17 +27,17 @@ func (m MockEventStore) GetAllEventsByStreamName(streamName string) ([]Event, er
 	return returnedEvents, args.Error(1)
 }
 
-// type MockEntityRepository struct {
-// 	mock.Mock
-// }
+type MockEntityRepository struct {
+	mock.Mock
+}
 
-// func (m MockEntityRepository) GetEntity(entity IEntity, id uuid.UUID) (IEntity, error) {
-// 	args := m.Called(entity, id)
-// 	returnedEntity, _ := args.Get(0).(IEntity)
-// 	return returnedEntity, args.Error(1)
-// }
+func (m MockEntityRepository) GetEntity(entity IReconstructible, id uuid.UUID) (IReconstructible, error) {
+	args := m.Called(entity, id)
+	returnedEntity, _ := args.Get(0).(IReconstructible)
+	return returnedEntity, args.Error(1)
+}
 
-// func (m MockEntityRepository) SaveEntity(entity IEntity) error {
-// 	args := m.Called(entity)
-// 	return args.Error(0)
-// }
+func (m MockEntityRepository) SaveEntity(entity IReconstructible) error {
+	args := m.Called(entity)
+	return args.Error(0)
+}
