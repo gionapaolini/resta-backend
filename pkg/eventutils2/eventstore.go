@@ -82,6 +82,14 @@ func (eventStore EventStore) GetAllEventsByStreamName(streamName string) ([]Even
 	return events, nil
 }
 
+func DeserializeRecordedEvent(recordedEvent *esdb.RecordedEvent) Event {
+	return Event{
+		ID:   recordedEvent.EventID,
+		Name: recordedEvent.EventType,
+		Data: recordedEvent.Data,
+	}
+}
+
 func prepareEventsBatch(events []Event) []esdb.EventData {
 	batch := []esdb.EventData{}
 	for _, event := range events {

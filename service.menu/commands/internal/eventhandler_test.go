@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
-	"github.com/Resta-Inc/resta/pkg/events"
-	"github.com/Resta-Inc/resta/pkg/eventutils"
+	"github.com/Resta-Inc/resta/menu/commands/internal/entities2"
+	"github.com/Resta-Inc/resta/pkg/events2"
+	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/exp/slices"
@@ -15,32 +15,36 @@ import (
 func TestHandleCategoryCreatedMessage(t *testing.T) {
 	// Arrange
 	categoryID := utils.GenerateNewUUID()
-	menu := entities.NewMenu()
+	menu := entities2.NewMenu()
 
-	categoryCreatedEvent := events.CategoryCreated{
-		EntityEventInfo: eventutils.NewEntityEventInfo(categoryID),
-		Name:            "TestCategoryName",
-		ParentMenuID:    menu.ID,
+	categoryCreatedEvent := events2.CategoryCreated{
+		EventInfo:    eventutils2.NewEventInfo(categoryID),
+		Name:         "TestCategoryName",
+		ParentMenuID: menu.ID,
 	}
+
+	serializedEvent := eventutils2.SerializedEvent(categoryCreatedEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
 			Event: &esdb.RecordedEvent{
-				Data: utils.SerializeObject(categoryCreatedEvent),
+				EventID:   serializedEvent.ID,
+				EventType: serializedEvent.Name,
+				Data:      serializedEvent.Data,
 			},
 		},
 		SubscriptionDropped: &esdb.SubscriptionDropped{},
 		CheckPointReached:   &esdb.Position{},
 	}
 
-	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", entities.EmptyMenu(), menu.ID).
+		On("GetEntity", &entities2.Menu{}, menu.ID).
 		Return(menu, nil)
 
 	mockEntityRepository.
 		On("SaveEntity", mock.MatchedBy(
-			func(menu entities.Menu) bool {
+			func(menu *entities2.Menu) bool {
 				return slices.Contains(menu.GetCategoriesIDs(), categoryID)
 			},
 		)).
@@ -58,32 +62,36 @@ func TestHandleCategoryCreatedMessage(t *testing.T) {
 func TestHandleSubCategoryCreatedMessage(t *testing.T) {
 	// Arrange
 	subCategoryID := utils.GenerateNewUUID()
-	category := entities.NewCategory(utils.GenerateNewUUID())
+	category := entities2.NewCategory(utils.GenerateNewUUID())
 
-	subCategoryCreatedEvent := events.SubCategoryCreated{
-		EntityEventInfo:  eventutils.NewEntityEventInfo(subCategoryID),
+	subCategoryCreatedEvent := events2.SubCategoryCreated{
+		EventInfo:        eventutils2.NewEventInfo(subCategoryID),
 		Name:             "TestCategoryName",
 		ParentCategoryID: category.ID,
 	}
 
+	serializedEvent := eventutils2.SerializedEvent(subCategoryCreatedEvent)
+
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
 			Event: &esdb.RecordedEvent{
-				Data: utils.SerializeObject(subCategoryCreatedEvent),
+				EventID:   serializedEvent.ID,
+				EventType: serializedEvent.Name,
+				Data:      serializedEvent.Data,
 			},
 		},
 		SubscriptionDropped: &esdb.SubscriptionDropped{},
 		CheckPointReached:   &esdb.Position{},
 	}
 
-	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", entities.EmptyCategory(), category.ID).
+		On("GetEntity", &entities2.Category{}, category.ID).
 		Return(category, nil)
 
 	mockEntityRepository.
 		On("SaveEntity", mock.MatchedBy(
-			func(category entities.Category) bool {
+			func(category *entities2.Category) bool {
 				return slices.Contains(category.GetSubCategoriesIDs(), subCategoryID)
 			},
 		)).
@@ -101,32 +109,36 @@ func TestHandleSubCategoryCreatedMessage(t *testing.T) {
 func TestHandleMenuItemCreatedMessage(t *testing.T) {
 	// Arrange
 	menuItemID := utils.GenerateNewUUID()
-	subCategory := entities.NewSubCategory(utils.GenerateNewUUID())
+	subCategory := entities2.NewSubCategory(utils.GenerateNewUUID())
 
-	menuItemCreatedEvent := events.MenuItemCreated{
-		EntityEventInfo:     eventutils.NewEntityEventInfo(menuItemID),
+	menuItemCreatedEvent := events2.MenuItemCreated{
+		EventInfo:           eventutils2.NewEventInfo(menuItemID),
 		Name:                "TestMenuItemName",
 		ParentSubCategoryID: subCategory.ID,
 	}
 
+	serializedEvent := eventutils2.SerializedEvent(menuItemCreatedEvent)
+
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
 			Event: &esdb.RecordedEvent{
-				Data: utils.SerializeObject(menuItemCreatedEvent),
+				EventID:   serializedEvent.ID,
+				EventType: serializedEvent.Name,
+				Data:      serializedEvent.Data,
 			},
 		},
 		SubscriptionDropped: &esdb.SubscriptionDropped{},
 		CheckPointReached:   &esdb.Position{},
 	}
 
-	mockEntityRepository := new(eventutils.MockEntityRepository)
+	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", entities.EmptySubCategory(), subCategory.ID).
+		On("GetEntity", &entities2.SubCategory{}, subCategory.ID).
 		Return(subCategory, nil)
 
 	mockEntityRepository.
 		On("SaveEntity", mock.MatchedBy(
-			func(subCategory entities.SubCategory) bool {
+			func(subCategory *entities2.SubCategory) bool {
 				return slices.Contains(subCategory.GetMenuItemsIDs(), menuItemID)
 			},
 		)).
