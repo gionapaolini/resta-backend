@@ -375,3 +375,28 @@ func TestChangeMenuItemName(t *testing.T) {
 	require.Equal(t, fiber.StatusOK, resp.StatusCode)
 	mockEntityRepository.AssertExpectations(t)
 }
+
+func TestChangeMenuItemName_WhenItemNotFound(t *testing.T) {
+	// Arrange
+	menuItem := entities2.NewMenuItem(utils.GenerateNewUUID())
+	mockEntityRepository := new(eventutils2.MockEntityRepository)
+	mockEntityRepository.
+		On("GetEntity", &entities2.MenuItem{}, menuItem.ID).
+		Return(nil, eventutils2.ErrEntityNotFound)
+
+	app := fiber.New()
+	SetupApi(app, mockEntityRepository, "")
+
+	jsonBody := `{"newName": "NewMenuItemName"}`
+	url := fmt.Sprintf("/menuitems/%s/change-name", menuItem.ID)
+	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(jsonBody))
+	request.Header.Add("content-type", "application/json")
+	require.NoError(t, err)
+
+	// Act
+	resp, _ := app.Test(request)
+
+	// Assert
+	require.Equal(t, fiber.StatusNotFound, resp.StatusCode)
+	mockEntityRepository.AssertExpectations(t)
+}
