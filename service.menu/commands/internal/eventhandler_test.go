@@ -6,7 +6,7 @@ import (
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
 	"github.com/Resta-Inc/resta/pkg/events"
-	"github.com/Resta-Inc/resta/pkg/eventutils2"
+	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/exp/slices"
@@ -18,12 +18,12 @@ func TestHandleCategoryCreatedMessage(t *testing.T) {
 	menu := entities.NewMenu()
 
 	categoryCreatedEvent := events.CategoryCreated{
-		EventInfo:    eventutils2.NewEventInfo(categoryID),
+		EventInfo:    eventutils.NewEventInfo(categoryID),
 		Name:         "TestCategoryName",
 		ParentMenuID: menu.ID,
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(categoryCreatedEvent)
+	serializedEvent := eventutils.SerializedEvent(categoryCreatedEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
@@ -37,7 +37,7 @@ func TestHandleCategoryCreatedMessage(t *testing.T) {
 		CheckPointReached:   &esdb.Position{},
 	}
 
-	mockEntityRepository := new(eventutils2.MockEntityRepository)
+	mockEntityRepository := new(eventutils.MockEntityRepository)
 	mockEntityRepository.
 		On("GetEntity", &entities.Menu{}, menu.ID).
 		Return(menu, nil)
@@ -65,12 +65,12 @@ func TestHandleSubCategoryCreatedMessage(t *testing.T) {
 	category := entities.NewCategory(utils.GenerateNewUUID())
 
 	subCategoryCreatedEvent := events.SubCategoryCreated{
-		EventInfo:        eventutils2.NewEventInfo(subCategoryID),
+		EventInfo:        eventutils.NewEventInfo(subCategoryID),
 		Name:             "TestCategoryName",
 		ParentCategoryID: category.ID,
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(subCategoryCreatedEvent)
+	serializedEvent := eventutils.SerializedEvent(subCategoryCreatedEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
@@ -84,7 +84,7 @@ func TestHandleSubCategoryCreatedMessage(t *testing.T) {
 		CheckPointReached:   &esdb.Position{},
 	}
 
-	mockEntityRepository := new(eventutils2.MockEntityRepository)
+	mockEntityRepository := new(eventutils.MockEntityRepository)
 	mockEntityRepository.
 		On("GetEntity", &entities.Category{}, category.ID).
 		Return(category, nil)
@@ -112,12 +112,12 @@ func TestHandleMenuItemCreatedMessage(t *testing.T) {
 	subCategory := entities.NewSubCategory(utils.GenerateNewUUID())
 
 	menuItemCreatedEvent := events.MenuItemCreated{
-		EventInfo:           eventutils2.NewEventInfo(menuItemID),
+		EventInfo:           eventutils.NewEventInfo(menuItemID),
 		Name:                "TestMenuItemName",
 		ParentSubCategoryID: subCategory.ID,
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(menuItemCreatedEvent)
+	serializedEvent := eventutils.SerializedEvent(menuItemCreatedEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
@@ -131,7 +131,7 @@ func TestHandleMenuItemCreatedMessage(t *testing.T) {
 		CheckPointReached:   &esdb.Position{},
 	}
 
-	mockEntityRepository := new(eventutils2.MockEntityRepository)
+	mockEntityRepository := new(eventutils.MockEntityRepository)
 	mockEntityRepository.
 		On("GetEntity", &entities.SubCategory{}, subCategory.ID).
 		Return(subCategory, nil)

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/Resta-Inc/resta/pkg/events"
-	"github.com/Resta-Inc/resta/pkg/eventutils2"
+	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/stretchr/testify/require"
@@ -82,26 +82,26 @@ func Test_AddCategory(t *testing.T) {
 
 func Test_DeserializeMenuEvent(t *testing.T) {
 	// Arrange
-	events := []eventutils2.IEvent{
+	events := []eventutils.IEvent{
 		events.MenuCreated{
-			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+			EventInfo: eventutils.NewEventInfo(utils.GenerateNewUUID()),
 		},
 		events.MenuEnabled{
-			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+			EventInfo: eventutils.NewEventInfo(utils.GenerateNewUUID()),
 		},
 		events.MenuDisabled{
-			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+			EventInfo: eventutils.NewEventInfo(utils.GenerateNewUUID()),
 		},
 		events.MenuNameChanged{
-			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+			EventInfo: eventutils.NewEventInfo(utils.GenerateNewUUID()),
 		},
 		events.CategoryAddedToMenu{
-			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+			EventInfo: eventutils.NewEventInfo(utils.GenerateNewUUID()),
 		},
 	}
 
 	for _, event := range events {
-		serialized := eventutils2.SerializedEvent(event)
+		serialized := eventutils.SerializedEvent(event)
 
 		// Act
 		deserialized := NewMenu().DeserializeEvent(serialized)

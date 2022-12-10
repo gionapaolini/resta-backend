@@ -3,26 +3,28 @@ package eventutils
 import (
 	"testing"
 
-	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGetEntity(t *testing.T) {
 	// Arrange
 	entity := NewTestEntity()
-	entity = CommitEvents(entity).(TestEntity)
 	mockEventStore := new(MockEventStore)
 
-	returnedEvents := mapToReturnedEvents(entity.GetCommittedEvents())
+	serializedEvents := serializeEvents(entity.GetEvents())
+
+	// resetting the entity like it was saved, it will allow to compare with the retrieved one
+	entity.New = false
+	entity.Events = nil
 
 	mockEventStore.
-		On("GetAllEventsByStreamName", GetStreamName(entity)).
-		Return(returnedEvents, nil)
+		On("GetAllEventsByStreamName", getStreamName(entity)).
+		Return(serializedEvents, nil)
 
 	repo := NewEntityRepository(mockEventStore)
 
 	//Act
-	foundEntity, err := repo.GetEntity(EmptyTestEntity(), entity.GetID())
+	foundEntity, err := repo.GetEntity(&TestEntity{}, entity.GetID())
 
 	//Assert
 	mockEventStore.AssertExpectations(t)
@@ -36,7 +38,7 @@ func TestSaveNewEntity(t *testing.T) {
 	mockEventStore := new(MockEventStore)
 
 	mockEventStore.
-		On("SaveEventsToNewStream", GetStreamName(entity), entity.GetLatestEvents()).
+		On("SaveEventsToNewStream", getStreamName(entity), serializeEvents(entity.Events)).
 		Return(nil, nil)
 
 	repo := NewEntityRepository(mockEventStore)
@@ -51,12 +53,13 @@ func TestSaveNewEntity(t *testing.T) {
 func TestSaveExistingEntity(t *testing.T) {
 	// Arrange
 	entity := NewTestEntity()
-	entity = CommitEvents(entity).(TestEntity)
+	entity.Events = []IEvent{}
+	entity.New = false
 	entity.ChangeName("NewName")
 	mockEventStore := new(MockEventStore)
 
 	mockEventStore.
-		On("SaveEventsToExistingStream", GetStreamName(entity), entity.GetLatestEvents()).
+		On("SaveEventsToExistingStream", getStreamName(entity), serializeEvents(entity.Events)).
 		Return(nil, nil)
 
 	repo := NewEntityRepository(mockEventStore)
@@ -66,14 +69,4 @@ func TestSaveExistingEntity(t *testing.T) {
 
 	//Assert
 	mockEventStore.AssertExpectations(t)
-}
-
-func mapToReturnedEvents(events []IEvent) []ReturnedEvent {
-	var returnedEvents []ReturnedEvent
-	for _, event := range events {
-		returnedEvents = append(returnedEvents, ReturnedEvent{
-			Data: utils.SerializeObject(event),
-		})
-	}
-	return returnedEvents
 }

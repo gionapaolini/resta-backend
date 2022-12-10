@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 
 	"github.com/Resta-Inc/resta/pkg/events"
-	"github.com/Resta-Inc/resta/pkg/eventutils2"
+	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/gofrs/uuid"
 )
 
 type SubCategory struct {
-	eventutils2.Entity
+	eventutils.Entity
 	State SubCategoryState
 }
 type SubCategoryState struct {
@@ -24,14 +24,14 @@ func NewSubCategory(categoryID uuid.UUID) *SubCategory {
 	subCategoryID := utils.GenerateNewUUID()
 
 	event := events.SubCategoryCreated{
-		EventInfo:        eventutils2.NewEventInfo(subCategoryID),
+		EventInfo:        eventutils.NewEventInfo(subCategoryID),
 		Name:             resources.DefaultSubCategoryName("en"),
 		ParentCategoryID: categoryID,
 	}
 
 	subCategory := &SubCategory{}
 	subCategory.SetNew()
-	eventutils2.AddEvent(event, subCategory)
+	eventutils.AddEvent(event, subCategory)
 	return subCategory
 }
 
@@ -45,27 +45,27 @@ func (subCategory SubCategory) GetMenuItemsIDs() []uuid.UUID {
 
 func (subCategory *SubCategory) ChangeName(newName string) {
 	event := events.SubCategoryNameChanged{
-		EventInfo: eventutils2.NewEventInfo(subCategory.ID),
+		EventInfo: eventutils.NewEventInfo(subCategory.ID),
 		NewName:   newName,
 	}
-	eventutils2.AddEvent(event, subCategory)
+	eventutils.AddEvent(event, subCategory)
 }
 
 func (subCategory *SubCategory) AddMenuItem(menuItemID uuid.UUID) {
 	event := events.MenuItemAddedToSubCategory{
-		EventInfo:  eventutils2.NewEventInfo(subCategory.ID),
+		EventInfo:  eventutils.NewEventInfo(subCategory.ID),
 		MenuItemID: menuItemID,
 	}
-	eventutils2.AddEvent(event, subCategory)
+	eventutils.AddEvent(event, subCategory)
 }
 
 // Events
 
-func (subCategory *SubCategory) AppendEvent(event eventutils2.IEvent) {
+func (subCategory *SubCategory) AppendEvent(event eventutils.IEvent) {
 	subCategory.Events = append(subCategory.Events, event)
 }
 
-func (subCategory SubCategory) DeserializeEvent(event eventutils2.Event) eventutils2.IEvent {
+func (subCategory SubCategory) DeserializeEvent(event eventutils.Event) eventutils.IEvent {
 	switch event.Name {
 	case "SubCategoryCreated":
 		var e events.SubCategoryCreated
@@ -84,7 +84,7 @@ func (subCategory SubCategory) DeserializeEvent(event eventutils2.Event) eventut
 	}
 }
 
-func (subCategory *SubCategory) ApplyEvent(event eventutils2.IEvent) {
+func (subCategory *SubCategory) ApplyEvent(event eventutils.IEvent) {
 	eventType := utils.GetType(event)
 	switch eventType {
 	case "SubCategoryCreated":

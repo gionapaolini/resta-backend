@@ -3,22 +3,22 @@ package events
 import (
 	"time"
 
-	"github.com/Resta-Inc/resta/pkg/eventutils2"
+	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/gofrs/uuid"
 )
 
 type MenuItemCreated struct {
-	eventutils2.EventInfo
+	eventutils.EventInfo
 	Name                string
 	ParentSubCategoryID uuid.UUID
 }
 
 type MenuItemNameChanged struct {
-	eventutils2.EventInfo
+	eventutils.EventInfo
 	NewName string
 }
 
 type MenuItemEstimatedPreparationTimeChanged struct {
-	eventutils2.EventInfo
+	eventutils.EventInfo
 	NewEstimate time.Duration
 }

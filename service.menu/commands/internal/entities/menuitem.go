@@ -5,14 +5,14 @@ import (
 	"time"
 
 	"github.com/Resta-Inc/resta/pkg/events"
-	"github.com/Resta-Inc/resta/pkg/eventutils2"
+	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/gofrs/uuid"
 )
 
 type MenuItem struct {
-	eventutils2.Entity
+	eventutils.Entity
 	State MenuItemState
 }
 type MenuItemState struct {
@@ -25,14 +25,14 @@ func NewMenuItem(subCategoryID uuid.UUID) *MenuItem {
 	categoryID := utils.GenerateNewUUID()
 
 	event := events.MenuItemCreated{
-		EventInfo:           eventutils2.NewEventInfo(categoryID),
+		EventInfo:           eventutils.NewEventInfo(categoryID),
 		Name:                resources.DefaultMenuItemName("en"),
 		ParentSubCategoryID: subCategoryID,
 	}
 
 	menuItem := &MenuItem{}
 	menuItem.SetNew()
-	eventutils2.AddEvent(event, menuItem)
+	eventutils.AddEvent(event, menuItem)
 	return menuItem
 }
 
@@ -46,28 +46,28 @@ func (menuItem MenuItem) GetEstimatedPreparationtime() time.Duration {
 
 func (menuItem *MenuItem) ChangeName(newName string) {
 	event := events.MenuItemNameChanged{
-		EventInfo: eventutils2.NewEventInfo(menuItem.GetID()),
+		EventInfo: eventutils.NewEventInfo(menuItem.GetID()),
 		NewName:   newName,
 	}
-	eventutils2.AddEvent(event, menuItem)
+	eventutils.AddEvent(event, menuItem)
 }
 
 func (menuItem *MenuItem) ChangeEstimatedPreparationTime(newTime time.Duration) {
 	event := events.MenuItemEstimatedPreparationTimeChanged{
-		EventInfo:   eventutils2.NewEventInfo(menuItem.GetID()),
+		EventInfo:   eventutils.NewEventInfo(menuItem.GetID()),
 		NewEstimate: newTime,
 	}
 
-	eventutils2.AddEvent(event, menuItem)
+	eventutils.AddEvent(event, menuItem)
 }
 
 // Events
 
-func (menuItem *MenuItem) AppendEvent(event eventutils2.IEvent) {
+func (menuItem *MenuItem) AppendEvent(event eventutils.IEvent) {
 	menuItem.Events = append(menuItem.Events, event)
 }
 
-func (menuItem MenuItem) DeserializeEvent(event eventutils2.Event) eventutils2.IEvent {
+func (menuItem MenuItem) DeserializeEvent(event eventutils.Event) eventutils.IEvent {
 	switch event.Name {
 	case "MenuItemCreated":
 		var e events.MenuItemCreated
@@ -86,7 +86,7 @@ func (menuItem MenuItem) DeserializeEvent(event eventutils2.Event) eventutils2.I
 	}
 }
 
-func (menuItem *MenuItem) ApplyEvent(event eventutils2.IEvent) {
+func (menuItem *MenuItem) ApplyEvent(event eventutils.IEvent) {
 	eventType := utils.GetType(event)
 	switch eventType {
 	case "MenuItemCreated":

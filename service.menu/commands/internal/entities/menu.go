@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/Resta-Inc/resta/pkg/events"
-	"github.com/Resta-Inc/resta/pkg/eventutils2"
+	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/gofrs/uuid"
@@ -12,7 +12,7 @@ import (
 
 // Models
 type Menu struct {
-	eventutils2.Entity
+	eventutils.Entity
 	State MenuState
 }
 
@@ -27,13 +27,13 @@ func NewMenu() *Menu {
 	menuID := utils.GenerateNewUUID()
 
 	event := events.MenuCreated{
-		EventInfo: eventutils2.NewEventInfo(menuID),
+		EventInfo: eventutils.NewEventInfo(menuID),
 		Name:      resources.DefaultMenuName("en"),
 	}
 
 	menu := &Menu{}
 	menu.SetNew()
-	eventutils2.AddEvent(event, menu)
+	eventutils.AddEvent(event, menu)
 	return menu
 }
 
@@ -51,41 +51,41 @@ func (menu Menu) GetCategoriesIDs() []uuid.UUID {
 
 func (menu *Menu) Enable() {
 	event := events.MenuEnabled{
-		EventInfo: eventutils2.NewEventInfo(menu.ID),
+		EventInfo: eventutils.NewEventInfo(menu.ID),
 	}
-	eventutils2.AddEvent(event, menu)
+	eventutils.AddEvent(event, menu)
 }
 
 func (menu *Menu) Disable() {
 	event := events.MenuDisabled{
-		EventInfo: eventutils2.NewEventInfo(menu.ID),
+		EventInfo: eventutils.NewEventInfo(menu.ID),
 	}
-	eventutils2.AddEvent(event, menu)
+	eventutils.AddEvent(event, menu)
 }
 
 func (menu *Menu) ChangeName(newName string) {
 	event := events.MenuNameChanged{
-		EventInfo: eventutils2.NewEventInfo(menu.ID),
+		EventInfo: eventutils.NewEventInfo(menu.ID),
 		NewName:   newName,
 	}
-	eventutils2.AddEvent(event, menu)
+	eventutils.AddEvent(event, menu)
 }
 
 func (menu *Menu) AddCategory(categoryID uuid.UUID) {
 	event := events.CategoryAddedToMenu{
-		EventInfo:  eventutils2.NewEventInfo(menu.ID),
+		EventInfo:  eventutils.NewEventInfo(menu.ID),
 		CategoryID: categoryID,
 	}
-	eventutils2.AddEvent(event, menu)
+	eventutils.AddEvent(event, menu)
 }
 
 // Events
 
-func (menu *Menu) AppendEvent(event eventutils2.IEvent) {
+func (menu *Menu) AppendEvent(event eventutils.IEvent) {
 	menu.Events = append(menu.Events, event)
 }
 
-func (menu Menu) DeserializeEvent(event eventutils2.Event) eventutils2.IEvent {
+func (menu Menu) DeserializeEvent(event eventutils.Event) eventutils.IEvent {
 	switch event.Name {
 	case "MenuCreated":
 		var e events.MenuCreated
@@ -111,7 +111,7 @@ func (menu Menu) DeserializeEvent(event eventutils2.Event) eventutils2.IEvent {
 	return nil
 }
 
-func (menu *Menu) ApplyEvent(event eventutils2.IEvent) {
+func (menu *Menu) ApplyEvent(event eventutils.IEvent) {
 	eventType := utils.GetType(event)
 	switch eventType {
 	case "MenuCreated":

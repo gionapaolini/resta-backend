@@ -1,4 +1,4 @@
-package eventutils2
+package eventutils
 
 import (
 	"encoding/json"

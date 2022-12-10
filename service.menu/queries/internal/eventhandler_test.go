@@ -5,7 +5,7 @@ import (
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/Resta-Inc/resta/pkg/events"
-	"github.com/Resta-Inc/resta/pkg/eventutils2"
+	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/utils"
 )
 
@@ -14,11 +14,11 @@ func TestHandleMenuCreatedMessage(t *testing.T) {
 	menuID := utils.GenerateNewUUID()
 
 	menuCreatedEvent := events.MenuCreated{
-		EventInfo: eventutils2.NewEventInfo(menuID),
+		EventInfo: eventutils.NewEventInfo(menuID),
 		Name:      "TestMenuName",
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(menuCreatedEvent)
+	serializedEvent := eventutils.SerializedEvent(menuCreatedEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
@@ -51,10 +51,10 @@ func TestHandleMenuEnabledMessage(t *testing.T) {
 	menuID := utils.GenerateNewUUID()
 
 	menuEnabledEvent := events.MenuEnabled{
-		EventInfo: eventutils2.NewEventInfo(menuID),
+		EventInfo: eventutils.NewEventInfo(menuID),
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(menuEnabledEvent)
+	serializedEvent := eventutils.SerializedEvent(menuEnabledEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
@@ -87,10 +87,10 @@ func TestHandleMenuDisabledMessage(t *testing.T) {
 	menuID := utils.GenerateNewUUID()
 
 	menuEnabledEvent := events.MenuDisabled{
-		EventInfo: eventutils2.NewEventInfo(menuID),
+		EventInfo: eventutils.NewEventInfo(menuID),
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(menuEnabledEvent)
+	serializedEvent := eventutils.SerializedEvent(menuEnabledEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
@@ -123,11 +123,11 @@ func TestHandleMenuNameChangedMessage(t *testing.T) {
 	menuID := utils.GenerateNewUUID()
 
 	menuEnabledEvent := events.MenuNameChanged{
-		EventInfo: eventutils2.NewEventInfo(menuID),
+		EventInfo: eventutils.NewEventInfo(menuID),
 		NewName:   "NewMenuName",
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(menuEnabledEvent)
+	serializedEvent := eventutils.SerializedEvent(menuEnabledEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
@@ -160,12 +160,12 @@ func TestHandleCategoryCreatedMessage(t *testing.T) {
 	menuID, categoryID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
 
 	categoryCreatedEvent := events.CategoryCreated{
-		EventInfo:    eventutils2.NewEventInfo(categoryID),
+		EventInfo:    eventutils.NewEventInfo(categoryID),
 		Name:         "TestCategoryName",
 		ParentMenuID: menuID,
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(categoryCreatedEvent)
+	serializedEvent := eventutils.SerializedEvent(categoryCreatedEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
@@ -200,11 +200,11 @@ func TestHandleCategoryAddedToMenuMessage(t *testing.T) {
 	menuID, categoryID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
 
 	categoryAddedToMenuEvent := events.CategoryAddedToMenu{
-		EventInfo:  eventutils2.NewEventInfo(menuID),
+		EventInfo:  eventutils.NewEventInfo(menuID),
 		CategoryID: categoryID,
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(categoryAddedToMenuEvent)
+	serializedEvent := eventutils.SerializedEvent(categoryAddedToMenuEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
@@ -237,11 +237,11 @@ func TestHandleCategoryNameChangedMessage(t *testing.T) {
 	categoryID := utils.GenerateNewUUID()
 
 	menuEnabledEvent := events.CategoryNameChanged{
-		EventInfo: eventutils2.NewEventInfo(categoryID),
+		EventInfo: eventutils.NewEventInfo(categoryID),
 		NewName:   "NewMenuName",
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(menuEnabledEvent)
+	serializedEvent := eventutils.SerializedEvent(menuEnabledEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
@@ -273,12 +273,12 @@ func TestHandleSubCategoryCreatedMessage(t *testing.T) {
 	categoryID, subCategoryID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
 
 	subCategoryCreatedEvent := events.SubCategoryCreated{
-		EventInfo:        eventutils2.NewEventInfo(subCategoryID),
+		EventInfo:        eventutils.NewEventInfo(subCategoryID),
 		Name:             "TestSubCategoryName",
 		ParentCategoryID: categoryID,
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(subCategoryCreatedEvent)
+	serializedEvent := eventutils.SerializedEvent(subCategoryCreatedEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
@@ -313,11 +313,11 @@ func TestHandleSubCategoryAddetToCategory(t *testing.T) {
 	categoryID, subCategoryID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
 
 	subCategoryAddedToCategoryEvent := events.SubCategoryAddedToCategory{
-		EventInfo:     eventutils2.NewEventInfo(categoryID),
+		EventInfo:     eventutils.NewEventInfo(categoryID),
 		SubCategoryID: subCategoryID,
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(subCategoryAddedToCategoryEvent)
+	serializedEvent := eventutils.SerializedEvent(subCategoryAddedToCategoryEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
@@ -352,12 +352,12 @@ func TestHandleMenuItemCreatedMessage(t *testing.T) {
 	subCategoryID, menuItemID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
 
 	subCategoryCreatedEvent := events.MenuItemCreated{
-		EventInfo:           eventutils2.NewEventInfo(menuItemID),
+		EventInfo:           eventutils.NewEventInfo(menuItemID),
 		Name:                "TestMenuItemName",
 		ParentSubCategoryID: subCategoryID,
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(subCategoryCreatedEvent)
+	serializedEvent := eventutils.SerializedEvent(subCategoryCreatedEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{
@@ -392,11 +392,11 @@ func TestHandleMenuItemAddetToCategory(t *testing.T) {
 	subCategoryID, menuItemID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
 
 	subCategoryAddedToCategoryEvent := events.MenuItemAddedToSubCategory{
-		EventInfo:  eventutils2.NewEventInfo(subCategoryID),
+		EventInfo:  eventutils.NewEventInfo(subCategoryID),
 		MenuItemID: menuItemID,
 	}
 
-	serializedEvent := eventutils2.SerializedEvent(subCategoryAddedToCategoryEvent)
+	serializedEvent := eventutils.SerializedEvent(subCategoryAddedToCategoryEvent)
 
 	incomingMessage := &esdb.SubscriptionEvent{
 		EventAppeared: &esdb.ResolvedEvent{

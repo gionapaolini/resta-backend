@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/Resta-Inc/resta/pkg/events"
-	"github.com/Resta-Inc/resta/pkg/eventutils2"
+	"github.com/Resta-Inc/resta/pkg/eventutils"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/stretchr/testify/require"
@@ -57,20 +57,20 @@ func Test_AddMenuItem(t *testing.T) {
 
 func Test_DeserializeSubCategoryEvent(t *testing.T) {
 	// Arrange
-	events := []eventutils2.IEvent{
+	events := []eventutils.IEvent{
 		events.SubCategoryCreated{
-			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+			EventInfo: eventutils.NewEventInfo(utils.GenerateNewUUID()),
 		},
 		events.SubCategoryNameChanged{
-			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+			EventInfo: eventutils.NewEventInfo(utils.GenerateNewUUID()),
 		},
 		events.MenuItemAddedToSubCategory{
-			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+			EventInfo: eventutils.NewEventInfo(utils.GenerateNewUUID()),
 		},
 	}
 
 	for _, event := range events {
-		serialized := eventutils2.SerializedEvent(event)
+		serialized := eventutils.SerializedEvent(event)
 
 		// Act
 		deserialized := SubCategory{}.DeserializeEvent(serialized)

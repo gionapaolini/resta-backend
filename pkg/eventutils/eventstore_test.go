@@ -3,7 +3,6 @@
 package eventutils
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
@@ -37,8 +36,7 @@ func TestSaveEventsAsNewStream(t *testing.T) {
 	require.NoError(t, err)
 
 	// Assert
-	storedEvents := deserializeEvents(returnedEvents)
-	require.Equal(t, storedEvents, events)
+	require.Equal(t, returnedEvents, events)
 }
 
 func TestSaveEventsToExistentStream(t *testing.T) {
@@ -60,30 +58,18 @@ func TestSaveEventsToExistentStream(t *testing.T) {
 	// Assert
 	returnedEvents, err := eventStore.GetAllEventsByStreamName(streamName)
 	require.NoError(t, err)
-	storedEvents := deserializeEvents(returnedEvents)
-	require.Equal(t, storedEvents, append(events, newEvents...))
+	require.Equal(t, returnedEvents, append(events, newEvents...))
 }
 
-func getRandomEvents(n int) []IEvent {
-	events := []IEvent{}
+func getRandomEvents(n int) []Event {
+	events := []Event{}
 	for i := 0; i < n; i++ {
 		event := TestEvent{
-			EventInfo: NewEventInfo(),
+			EventInfo: NewEventInfo(utils.GenerateNewUUID()),
 		}
 		event.Data = "Test - " + event.GetEventID().String()
-		events = append(events, event)
+		serializedEvent := SerializedEvent(event)
+		events = append(events, serializedEvent)
 	}
 	return events
-}
-
-func deserializeEvents(returnedEvents []ReturnedEvent) []IEvent {
-	storedEvents := []IEvent{}
-	for _, returnedEvent := range returnedEvents {
-		var event utils.TypedJson
-		json.Unmarshal(returnedEvent.Data, &event)
-		var deserializedEvent TestEvent
-		json.Unmarshal(event.Data, &deserializedEvent)
-		storedEvents = append(storedEvents, deserializedEvent)
-	}
-	return storedEvents
 }

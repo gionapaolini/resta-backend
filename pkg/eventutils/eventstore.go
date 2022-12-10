@@ -6,7 +6,6 @@ import (
 	"io"
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"github.com/Resta-Inc/resta/pkg/utils"
 )
 
 func NewEsdbClient(connectionString string) (*esdb.Client, error) {
@@ -19,9 +18,9 @@ func NewEsdbClient(connectionString string) (*esdb.Client, error) {
 }
 
 type IEventStore interface {
-	SaveEventsToNewStream(streamName string, events []IEvent) (*esdb.WriteResult, error)
-	SaveEventsToExistingStream(streamName string, events []IEvent) (*esdb.WriteResult, error)
-	GetAllEventsByStreamName(streamName string) ([]ReturnedEvent, error)
+	SaveEventsToNewStream(streamName string, events []Event) (*esdb.WriteResult, error)
+	SaveEventsToExistingStream(streamName string, events []Event) (*esdb.WriteResult, error)
+	GetAllEventsByStreamName(streamName string) ([]Event, error)
 }
 
 type EventStore struct {
@@ -35,7 +34,7 @@ func NewEventStore(client *esdb.Client) (*EventStore, error) {
 	return eventStore, nil
 }
 
-func (eventStore EventStore) SaveEventsToNewStream(streamName string, events []IEvent) (*esdb.WriteResult, error) {
+func (eventStore EventStore) SaveEventsToNewStream(streamName string, events []Event) (*esdb.WriteResult, error) {
 	batch := prepareEventsBatch(events)
 	options := esdb.AppendToStreamOptions{
 		ExpectedRevision: esdb.NoStream{},
@@ -44,7 +43,7 @@ func (eventStore EventStore) SaveEventsToNewStream(streamName string, events []I
 	return writeResult, err
 }
 
-func (eventStore EventStore) SaveEventsToExistingStream(streamName string, events []IEvent) (*esdb.WriteResult, error) {
+func (eventStore EventStore) SaveEventsToExistingStream(streamName string, events []Event) (*esdb.WriteResult, error) {
 	batch := prepareEventsBatch(events)
 	options := esdb.AppendToStreamOptions{
 		ExpectedRevision: esdb.StreamExists{},
@@ -53,7 +52,7 @@ func (eventStore EventStore) SaveEventsToExistingStream(streamName string, event
 	return writeResult, err
 }
 
-func (eventStore EventStore) GetAllEventsByStreamName(streamName string) ([]ReturnedEvent, error) {
+func (eventStore EventStore) GetAllEventsByStreamName(streamName string) ([]Event, error) {
 
 	options := esdb.ReadStreamOptions{}
 	stream, err := eventStore.db.ReadStream(context.Background(), streamName, options, 200)
@@ -64,7 +63,7 @@ func (eventStore EventStore) GetAllEventsByStreamName(streamName string) ([]Retu
 		return nil, err
 	}
 	defer stream.Close()
-	events := []ReturnedEvent{}
+	events := []Event{}
 	for {
 		eventData, err := stream.Recv()
 		if errors.Is(err, io.EOF) {
@@ -73,7 +72,9 @@ func (eventStore EventStore) GetAllEventsByStreamName(streamName string) ([]Retu
 		if err != nil {
 			return nil, err
 		}
-		event := ReturnedEvent{
+		event := Event{
+			ID:   eventData.Event.EventID,
+			Name: eventData.Event.EventType,
 			Data: eventData.Event.Data,
 		}
 		events = append(events, event)
@@ -81,15 +82,22 @@ func (eventStore EventStore) GetAllEventsByStreamName(streamName string) ([]Retu
 	return events, nil
 }
 
-func prepareEventsBatch(events []IEvent) []esdb.EventData {
+func DeserializeRecordedEvent(recordedEvent *esdb.RecordedEvent) Event {
+	return Event{
+		ID:   recordedEvent.EventID,
+		Name: recordedEvent.EventType,
+		Data: recordedEvent.Data,
+	}
+}
+
+func prepareEventsBatch(events []Event) []esdb.EventData {
 	batch := []esdb.EventData{}
 	for _, event := range events {
-		finalJson := utils.SerializeObject(event)
 		eventData := esdb.EventData{
-			EventID:     event.GetEventID(),
+			EventID:     event.ID,
 			ContentType: esdb.JsonContentType,
-			EventType:   utils.GetType(event),
-			Data:        finalJson,
+			EventType:   event.Name,
+			Data:        event.Data,
 		}
 		batch = append(batch, eventData)
 	}
