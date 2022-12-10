@@ -32,6 +32,7 @@ func NewMenu() *Menu {
 	}
 
 	menu := &Menu{}
+	menu.SetNew()
 	eventutils2.AddEvent(event, menu)
 	return menu
 }

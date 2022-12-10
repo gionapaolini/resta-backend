@@ -17,6 +17,7 @@ func TestCreateCategory(t *testing.T) {
 
 	// Assert
 	latestEvent := category.Events[len(category.Events)-1]
+	require.True(t, category.IsNew())
 	require.Equal(t, resources.DefaultCategoryName("en"), category.GetName())
 	require.Len(t, category.Events, 1)
 	require.IsType(t, events2.CategoryCreated{}, latestEvent)

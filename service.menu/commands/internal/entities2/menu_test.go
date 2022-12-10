@@ -16,6 +16,7 @@ func Test_CreateMenu(t *testing.T) {
 
 	// Assert
 	latestEvent := menu.Events[0]
+	require.True(t, menu.IsNew())
 	require.Equal(t, resources.DefaultMenuName("en"), menu.GetName())
 	require.Len(t, menu.Events, 1)
 	require.IsType(t, events2.MenuCreated{}, latestEvent)

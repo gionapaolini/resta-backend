@@ -31,6 +31,7 @@ func NewMenuItem(subCategoryID uuid.UUID) *MenuItem {
 	}
 
 	menuItem := &MenuItem{}
+	menuItem.SetNew()
 	eventutils2.AddEvent(event, menuItem)
 	return menuItem
 }

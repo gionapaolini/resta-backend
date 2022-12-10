@@ -17,6 +17,7 @@ func TestCreateSubCategory(t *testing.T) {
 
 	// Assert
 	latestEvent := subCategory.Events[len(subCategory.Events)-1]
+	require.True(t, subCategory.IsNew())
 	require.Equal(t, resources.DefaultSubCategoryName("en"), subCategory.GetName())
 	require.Len(t, subCategory.Events, 1)
 	require.IsType(t, events2.SubCategoryCreated{}, latestEvent)

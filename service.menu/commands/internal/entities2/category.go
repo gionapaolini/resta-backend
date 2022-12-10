@@ -30,6 +30,7 @@ func NewCategory(menuID uuid.UUID) *Category {
 	}
 
 	category := &Category{}
+	category.SetNew()
 	eventutils2.AddEvent(event, category)
 	return category
 }

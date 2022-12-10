@@ -30,6 +30,7 @@ func NewSubCategory(categoryID uuid.UUID) *SubCategory {
 	}
 
 	subCategory := &SubCategory{}
+	subCategory.SetNew()
 	eventutils2.AddEvent(event, subCategory)
 	return subCategory
 }
