@@ -3,8 +3,8 @@ package entities
 import (
 	"testing"
 
-	"github.com/Resta-Inc/resta/pkg/events"
-	"github.com/Resta-Inc/resta/pkg/eventutils"
+	"github.com/Resta-Inc/resta/pkg/events2"
+	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/stretchr/testify/require"
@@ -16,13 +16,13 @@ func TestCreateSubCategory(t *testing.T) {
 	subCategory := NewSubCategory(categoryID)
 
 	// Assert
+	latestEvent := subCategory.Events[len(subCategory.Events)-1]
+	require.True(t, subCategory.IsNew())
 	require.Equal(t, resources.DefaultSubCategoryName("en"), subCategory.GetName())
-	require.Len(t, subCategory.GetAllEvents(), 1)
-	require.Len(t, subCategory.GetCommittedEvents(), 0)
-	require.Len(t, subCategory.GetLatestEvents(), 1)
-	require.IsType(t, events.SubCategoryCreated{}, subCategory.GetLatestEvents()[0])
-	require.Equal(t, utils.Time.Now(), subCategory.GetLatestEvents()[0].GetDateTime())
-	require.Equal(t, subCategory.ID, subCategory.GetLatestEvents()[0].(eventutils.IEntityEvent).GetEntityID())
+	require.Len(t, subCategory.Events, 1)
+	require.IsType(t, events2.SubCategoryCreated{}, latestEvent)
+	require.Equal(t, utils.Time.Now(), latestEvent.GetTimeStamp())
+	require.Equal(t, subCategory.ID, latestEvent.GetEntityID())
 	require.False(t, subCategory.IsDeleted)
 }
 
@@ -31,12 +31,14 @@ func TestChangeSubCategoryName(t *testing.T) {
 	categoryID := utils.GenerateNewUUID()
 	subCategory := NewSubCategory(categoryID)
 	newName := "New name"
+
 	// Act
-	subCategory = subCategory.ChangeName(newName)
+	subCategory.ChangeName(newName)
 
 	// Assert
+	latestEvent := subCategory.Events[len(subCategory.Events)-1]
 	require.Equal(t, newName, subCategory.GetName())
-	require.IsType(t, events.SubCategoryNameChanged{}, subCategory.GetLatestEvents()[1])
+	require.IsType(t, events2.SubCategoryNameChanged{}, latestEvent)
 }
 
 func Test_AddMenuItem(t *testing.T) {
@@ -45,32 +47,33 @@ func Test_AddMenuItem(t *testing.T) {
 	subCategory := NewSubCategory(utils.GenerateNewUUID())
 
 	// Act
-	subCategory = subCategory.AddMenuItem(menuItemID)
+	subCategory.AddMenuItem(menuItemID)
 
 	// Assert
+	latestEvent := subCategory.Events[len(subCategory.Events)-1]
 	require.Contains(t, subCategory.GetMenuItemsIDs(), menuItemID)
-	require.IsType(t, events.MenuItemAddedToSubCategory{}, subCategory.GetLatestEvents()[1])
+	require.IsType(t, events2.MenuItemAddedToSubCategory{}, latestEvent)
 }
 
 func Test_DeserializeSubCategoryEvent(t *testing.T) {
 	// Arrange
-	events := []eventutils.IEvent{
-		events.SubCategoryCreated{
-			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
+	events := []eventutils2.IEvent{
+		events2.SubCategoryCreated{
+			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
 		},
-		events.SubCategoryNameChanged{
-			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
+		events2.SubCategoryNameChanged{
+			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
 		},
-		events.MenuItemAddedToSubCategory{
-			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
+		events2.MenuItemAddedToSubCategory{
+			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
 		},
 	}
 
 	for _, event := range events {
-		serialized := utils.SerializeObject(event)
+		serialized := eventutils2.SerializedEvent(event)
 
 		// Act
-		deserialized := EmptySubCategory().DeserializeEvent(serialized)
+		deserialized := SubCategory{}.DeserializeEvent(serialized)
 
 		// Assert
 		require.Equal(t, event, deserialized)

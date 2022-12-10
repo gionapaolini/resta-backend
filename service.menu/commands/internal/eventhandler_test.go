@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"github.com/Resta-Inc/resta/menu/commands/internal/entities2"
+	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
 	"github.com/Resta-Inc/resta/pkg/events2"
 	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/Resta-Inc/resta/pkg/utils"
@@ -15,7 +15,7 @@ import (
 func TestHandleCategoryCreatedMessage(t *testing.T) {
 	// Arrange
 	categoryID := utils.GenerateNewUUID()
-	menu := entities2.NewMenu()
+	menu := entities.NewMenu()
 
 	categoryCreatedEvent := events2.CategoryCreated{
 		EventInfo:    eventutils2.NewEventInfo(categoryID),
@@ -39,12 +39,12 @@ func TestHandleCategoryCreatedMessage(t *testing.T) {
 
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.Menu{}, menu.ID).
+		On("GetEntity", &entities.Menu{}, menu.ID).
 		Return(menu, nil)
 
 	mockEntityRepository.
 		On("SaveEntity", mock.MatchedBy(
-			func(menu *entities2.Menu) bool {
+			func(menu *entities.Menu) bool {
 				return slices.Contains(menu.GetCategoriesIDs(), categoryID)
 			},
 		)).
@@ -62,7 +62,7 @@ func TestHandleCategoryCreatedMessage(t *testing.T) {
 func TestHandleSubCategoryCreatedMessage(t *testing.T) {
 	// Arrange
 	subCategoryID := utils.GenerateNewUUID()
-	category := entities2.NewCategory(utils.GenerateNewUUID())
+	category := entities.NewCategory(utils.GenerateNewUUID())
 
 	subCategoryCreatedEvent := events2.SubCategoryCreated{
 		EventInfo:        eventutils2.NewEventInfo(subCategoryID),
@@ -86,12 +86,12 @@ func TestHandleSubCategoryCreatedMessage(t *testing.T) {
 
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.Category{}, category.ID).
+		On("GetEntity", &entities.Category{}, category.ID).
 		Return(category, nil)
 
 	mockEntityRepository.
 		On("SaveEntity", mock.MatchedBy(
-			func(category *entities2.Category) bool {
+			func(category *entities.Category) bool {
 				return slices.Contains(category.GetSubCategoriesIDs(), subCategoryID)
 			},
 		)).
@@ -109,7 +109,7 @@ func TestHandleSubCategoryCreatedMessage(t *testing.T) {
 func TestHandleMenuItemCreatedMessage(t *testing.T) {
 	// Arrange
 	menuItemID := utils.GenerateNewUUID()
-	subCategory := entities2.NewSubCategory(utils.GenerateNewUUID())
+	subCategory := entities.NewSubCategory(utils.GenerateNewUUID())
 
 	menuItemCreatedEvent := events2.MenuItemCreated{
 		EventInfo:           eventutils2.NewEventInfo(menuItemID),
@@ -133,12 +133,12 @@ func TestHandleMenuItemCreatedMessage(t *testing.T) {
 
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.SubCategory{}, subCategory.ID).
+		On("GetEntity", &entities.SubCategory{}, subCategory.ID).
 		Return(subCategory, nil)
 
 	mockEntityRepository.
 		On("SaveEntity", mock.MatchedBy(
-			func(subCategory *entities2.SubCategory) bool {
+			func(subCategory *entities.SubCategory) bool {
 				return slices.Contains(subCategory.GetMenuItemsIDs(), menuItemID)
 			},
 		)).

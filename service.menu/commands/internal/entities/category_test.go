@@ -3,8 +3,8 @@ package entities
 import (
 	"testing"
 
-	"github.com/Resta-Inc/resta/pkg/events"
-	"github.com/Resta-Inc/resta/pkg/eventutils"
+	"github.com/Resta-Inc/resta/pkg/events2"
+	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/stretchr/testify/require"
@@ -16,13 +16,13 @@ func TestCreateCategory(t *testing.T) {
 	category := NewCategory(menuID)
 
 	// Assert
+	latestEvent := category.Events[len(category.Events)-1]
+	require.True(t, category.IsNew())
 	require.Equal(t, resources.DefaultCategoryName("en"), category.GetName())
-	require.Len(t, category.GetAllEvents(), 1)
-	require.Len(t, category.GetCommittedEvents(), 0)
-	require.Len(t, category.GetLatestEvents(), 1)
-	require.IsType(t, events.CategoryCreated{}, category.GetLatestEvents()[0])
-	require.Equal(t, utils.Time.Now(), category.GetLatestEvents()[0].GetDateTime())
-	require.Equal(t, category.ID, category.GetLatestEvents()[0].(eventutils.IEntityEvent).GetEntityID())
+	require.Len(t, category.Events, 1)
+	require.IsType(t, events2.CategoryCreated{}, latestEvent)
+	require.Equal(t, utils.Time.Now(), latestEvent.GetTimeStamp())
+	require.Equal(t, category.ID, latestEvent.GetEntityID())
 	require.False(t, category.IsDeleted)
 }
 
@@ -33,11 +33,12 @@ func TestChangeCategoryName(t *testing.T) {
 	newName := "New name"
 
 	// Act
-	category = category.ChangeName(newName)
+	category.ChangeName(newName)
 
 	// Assert
+	latestEvent := category.Events[len(category.Events)-1]
 	require.Equal(t, newName, category.GetName())
-	require.IsType(t, events.CategoryNameChanged{}, category.GetLatestEvents()[1])
+	require.IsType(t, events2.CategoryNameChanged{}, latestEvent)
 }
 
 func Test_AddSubCategory(t *testing.T) {
@@ -46,29 +47,33 @@ func Test_AddSubCategory(t *testing.T) {
 	category := NewCategory(utils.GenerateNewUUID())
 
 	// Act
-	category = category.AddSubCategory(subCategoryID)
+	category.AddSubCategory(subCategoryID)
 
 	// Assert
+	latestEvent := category.Events[len(category.Events)-1]
 	require.Contains(t, category.GetSubCategoriesIDs(), subCategoryID)
-	require.IsType(t, events.SubCategoryAddedToCategory{}, category.GetLatestEvents()[1])
+	require.IsType(t, events2.SubCategoryAddedToCategory{}, latestEvent)
 }
 
 func Test_DeserializeCategoryEvent(t *testing.T) {
 	// Arrange
-	events := []eventutils.IEvent{
-		events.CategoryCreated{
-			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
+	events := []eventutils2.IEvent{
+		events2.CategoryCreated{
+			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
 		},
-		events.CategoryNameChanged{
-			EntityEventInfo: eventutils.NewEntityEventInfo(utils.GenerateNewUUID()),
+		events2.CategoryNameChanged{
+			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
+		},
+		events2.SubCategoryAddedToCategory{
+			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
 		},
 	}
 
 	for _, event := range events {
-		serialized := utils.SerializeObject(event)
+		serialized := eventutils2.SerializedEvent(event)
 
 		// Act
-		deserialized := EmptyCategory().DeserializeEvent(serialized)
+		deserialized := Category{}.DeserializeEvent(serialized)
 
 		// Assert
 		require.Equal(t, event, deserialized)

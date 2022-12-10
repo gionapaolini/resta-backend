@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Resta-Inc/resta/menu/commands/internal/entities2"
+	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
 	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/gofiber/fiber/v2"
@@ -23,7 +23,7 @@ func TestCreateNewMenu(t *testing.T) {
 	// Arrange
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("SaveEntity", mock.AnythingOfType("*entities2.Menu")).
+		On("SaveEntity", mock.AnythingOfType("*entities.Menu")).
 		Return(nil)
 
 	app := fiber.New()
@@ -42,15 +42,15 @@ func TestCreateNewMenu(t *testing.T) {
 
 func TestEnableMenu(t *testing.T) {
 	// Arrange
-	menu := entities2.NewMenu()
+	menu := entities.NewMenu()
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.Menu{}, menu.ID).
+		On("GetEntity", &entities.Menu{}, menu.ID).
 		Return(menu, nil)
 
 	mockEntityRepository.
 		On("SaveEntity", mock.MatchedBy(
-			func(menu *entities2.Menu) bool {
+			func(menu *entities.Menu) bool {
 				return menu.IsEnabled()
 			},
 		)).
@@ -73,16 +73,16 @@ func TestEnableMenu(t *testing.T) {
 
 func TestDisableMenu(t *testing.T) {
 	// Arrange
-	menu := entities2.NewMenu()
+	menu := entities.NewMenu()
 	menu.Enable()
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.Menu{}, menu.ID).
+		On("GetEntity", &entities.Menu{}, menu.ID).
 		Return(menu, nil)
 
 	mockEntityRepository.
 		On("SaveEntity", mock.MatchedBy(
-			func(menu *entities2.Menu) bool {
+			func(menu *entities.Menu) bool {
 				return !menu.IsEnabled()
 			},
 		)).
@@ -105,15 +105,15 @@ func TestDisableMenu(t *testing.T) {
 
 func TestChangeMenuName(t *testing.T) {
 	// Arrange
-	menu := entities2.NewMenu()
+	menu := entities.NewMenu()
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.Menu{}, menu.ID).
+		On("GetEntity", &entities.Menu{}, menu.ID).
 		Return(menu, nil)
 
 	mockEntityRepository.
 		On("SaveEntity", mock.MatchedBy(
-			func(menu *entities2.Menu) bool {
+			func(menu *entities.Menu) bool {
 				return menu.GetName() == "NewMenuName"
 			},
 		)).
@@ -138,14 +138,14 @@ func TestChangeMenuName(t *testing.T) {
 
 func TestNewCategory(t *testing.T) {
 	// Arrange
-	menu := entities2.NewMenu()
+	menu := entities.NewMenu()
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.Menu{}, menu.ID).
+		On("GetEntity", &entities.Menu{}, menu.ID).
 		Return(menu, nil)
 
 	mockEntityRepository.
-		On("SaveEntity", mock.AnythingOfType("*entities2.Category")).
+		On("SaveEntity", mock.AnythingOfType("*entities.Category")).
 		Return(nil)
 
 	app := fiber.New()
@@ -167,17 +167,17 @@ func TestNewCategory(t *testing.T) {
 
 func TestChangeCategoryName(t *testing.T) {
 	// Arrange
-	menu := entities2.NewMenu()
-	category := entities2.NewCategory(menu.ID)
+	menu := entities.NewMenu()
+	category := entities.NewCategory(menu.ID)
 	newName := "NewCategoryName"
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.Category{}, category.ID).
+		On("GetEntity", &entities.Category{}, category.ID).
 		Return(category, nil)
 
 	mockEntityRepository.
 		On("SaveEntity", mock.MatchedBy(
-			func(category *entities2.Category) bool {
+			func(category *entities.Category) bool {
 				return category.GetName() == newName
 			},
 		)).
@@ -205,11 +205,11 @@ func TestUploadCategoryPicture(t *testing.T) {
 	err := os.MkdirAll("./resources/images/categories", 0755)
 	defer os.RemoveAll("./resources")
 	require.NoError(t, err)
-	menu := entities2.NewMenu()
-	category := entities2.NewCategory(menu.ID)
+	menu := entities.NewMenu()
+	category := entities.NewCategory(menu.ID)
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.Category{}, category.ID).
+		On("GetEntity", &entities.Category{}, category.ID).
 		Return(category, nil)
 
 	app := fiber.New()
@@ -245,14 +245,14 @@ func TestUploadCategoryPicture(t *testing.T) {
 
 func TestNewSubCategory(t *testing.T) {
 	// Arrange
-	category := entities2.NewCategory(utils.GenerateNewUUID())
+	category := entities.NewCategory(utils.GenerateNewUUID())
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.Category{}, category.ID).
+		On("GetEntity", &entities.Category{}, category.ID).
 		Return(category, nil)
 
 	mockEntityRepository.
-		On("SaveEntity", mock.AnythingOfType("*entities2.SubCategory")).
+		On("SaveEntity", mock.AnythingOfType("*entities.SubCategory")).
 		Return(nil)
 
 	app := fiber.New()
@@ -274,14 +274,14 @@ func TestNewSubCategory(t *testing.T) {
 
 func TestNewMenuItem(t *testing.T) {
 	// Arrange
-	subCategory := entities2.NewSubCategory(utils.GenerateNewUUID())
+	subCategory := entities.NewSubCategory(utils.GenerateNewUUID())
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.SubCategory{}, subCategory.ID).
+		On("GetEntity", &entities.SubCategory{}, subCategory.ID).
 		Return(subCategory, nil)
 
 	mockEntityRepository.
-		On("SaveEntity", mock.AnythingOfType("*entities2.MenuItem")).
+		On("SaveEntity", mock.AnythingOfType("*entities.MenuItem")).
 		Return(nil)
 
 	app := fiber.New()
@@ -306,10 +306,10 @@ func TestUploadSubCategoryPicture(t *testing.T) {
 	err := os.MkdirAll("./resources/images/subcategories", 0755)
 	defer os.RemoveAll("./resources")
 	require.NoError(t, err)
-	subcategory := entities2.NewSubCategory(utils.GenerateNewUUID())
+	subcategory := entities.NewSubCategory(utils.GenerateNewUUID())
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.SubCategory{}, subcategory.ID).
+		On("GetEntity", &entities.SubCategory{}, subcategory.ID).
 		Return(subcategory, nil)
 
 	app := fiber.New()
@@ -345,15 +345,15 @@ func TestUploadSubCategoryPicture(t *testing.T) {
 
 func TestChangeMenuItemName(t *testing.T) {
 	// Arrange
-	menuItem := entities2.NewMenuItem(utils.GenerateNewUUID())
+	menuItem := entities.NewMenuItem(utils.GenerateNewUUID())
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.MenuItem{}, menuItem.ID).
+		On("GetEntity", &entities.MenuItem{}, menuItem.ID).
 		Return(menuItem, nil)
 
 	mockEntityRepository.
 		On("SaveEntity", mock.MatchedBy(
-			func(menu *entities2.MenuItem) bool {
+			func(menu *entities.MenuItem) bool {
 				return menu.GetName() == "NewMenuItemName"
 			},
 		)).
@@ -378,10 +378,10 @@ func TestChangeMenuItemName(t *testing.T) {
 
 func TestChangeMenuItemName_WhenItemNotFound(t *testing.T) {
 	// Arrange
-	menuItem := entities2.NewMenuItem(utils.GenerateNewUUID())
+	menuItem := entities.NewMenuItem(utils.GenerateNewUUID())
 	mockEntityRepository := new(eventutils2.MockEntityRepository)
 	mockEntityRepository.
-		On("GetEntity", &entities2.MenuItem{}, menuItem.ID).
+		On("GetEntity", &entities.MenuItem{}, menuItem.ID).
 		Return(nil, eventutils2.ErrEntityNotFound)
 
 	app := fiber.New()

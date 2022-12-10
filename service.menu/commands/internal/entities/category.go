@@ -3,15 +3,15 @@ package entities
 import (
 	"encoding/json"
 
-	"github.com/Resta-Inc/resta/pkg/events"
-	"github.com/Resta-Inc/resta/pkg/eventutils"
+	"github.com/Resta-Inc/resta/pkg/events2"
+	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/gofrs/uuid"
 )
 
 type Category struct {
-	*eventutils.Entity
+	eventutils2.Entity
 	State CategoryState
 }
 type CategoryState struct {
@@ -20,23 +20,19 @@ type CategoryState struct {
 }
 
 // Business Logic
-func NewCategory(menuID uuid.UUID) Category {
+func NewCategory(menuID uuid.UUID) *Category {
 	categoryID := utils.GenerateNewUUID()
 
-	event := events.CategoryCreated{
-		EntityEventInfo: eventutils.NewEntityEventInfo(categoryID),
-		Name:            resources.DefaultCategoryName("en"),
-		ParentMenuID:    menuID,
+	event := events2.CategoryCreated{
+		EventInfo:    eventutils2.NewEventInfo(categoryID),
+		Name:         resources.DefaultCategoryName("en"),
+		ParentMenuID: menuID,
 	}
 
-	category := EmptyCategory()
-	return eventutils.AddNewEvent(category, event).(Category)
-}
-
-func EmptyCategory() Category {
-	return Category{
-		Entity: &eventutils.Entity{},
-	}
+	category := &Category{}
+	category.SetNew()
+	eventutils2.AddEvent(event, category)
+	return category
 }
 
 func (category Category) GetName() string {
@@ -47,69 +43,67 @@ func (category Category) GetSubCategoriesIDs() []uuid.UUID {
 	return category.State.SubCategoriesIDs
 }
 
-func (category Category) ChangeName(newName string) Category {
-	event := events.CategoryNameChanged{
-		EntityEventInfo: eventutils.NewEntityEventInfo(category.ID),
-		NewName:         newName,
+func (category *Category) ChangeName(newName string) {
+	event := events2.CategoryNameChanged{
+		EventInfo: eventutils2.NewEventInfo(category.ID),
+		NewName:   newName,
 	}
-	return eventutils.AddNewEvent(category, event).(Category)
+	eventutils2.AddEvent(event, category)
 }
 
-func (category Category) AddSubCategory(categoryID uuid.UUID) Category {
-	event := events.SubCategoryAddedToCategory{
-		EntityEventInfo: eventutils.NewEntityEventInfo(category.GetID()),
-		SubCategoryID:   categoryID,
+func (category *Category) AddSubCategory(categoryID uuid.UUID) {
+	event := events2.SubCategoryAddedToCategory{
+		EventInfo:     eventutils2.NewEventInfo(category.GetID()),
+		SubCategoryID: categoryID,
 	}
-	category = eventutils.AddNewEvent(category, event).(Category)
-	return category
+	eventutils2.AddEvent(event, category)
 }
 
 // Events
-func (category Category) ApplyEvent(event eventutils.IEntityEvent) eventutils.IEntity {
-	eventType := utils.GetType(event)
-	switch eventType {
+func (category *Category) AppendEvent(event eventutils2.IEvent) {
+	category.Events = append(category.Events, event)
+}
+
+func (category Category) DeserializeEvent(event eventutils2.Event) eventutils2.IEvent {
+	switch event.Name {
 	case "CategoryCreated":
-		category = category.applyCategoryCreated(event.(events.CategoryCreated))
-	case "CategoryNameChanged":
-		category = category.applyCategoryNameChanged(event.(events.CategoryNameChanged))
-	case "SubCategoryAddedToCategory":
-		category = category.applySubCategoryAddedToCategory(event.(events.SubCategoryAddedToCategory))
-	}
-	return category
-}
-
-func (category Category) applyCategoryCreated(event events.CategoryCreated) Category {
-	category.ID = event.EntityID
-	category.State.Name = event.Name
-	return category
-}
-
-func (category Category) applyCategoryNameChanged(event events.CategoryNameChanged) Category {
-	category.State.Name = event.NewName
-	return category
-}
-
-func (category Category) applySubCategoryAddedToCategory(event events.SubCategoryAddedToCategory) Category {
-	category.State.SubCategoriesIDs = append(category.State.SubCategoriesIDs, event.SubCategoryID)
-	return category
-}
-
-func (category Category) DeserializeEvent(jsonData []byte) eventutils.IEvent {
-	eventType, rawData := eventutils.GetRawDataFromSerializedEvent(jsonData)
-	switch eventType {
-	case "CategoryCreated":
-		var e events.CategoryCreated
-		json.Unmarshal(rawData, &e)
+		var e events2.CategoryCreated
+		json.Unmarshal(event.Data, &e)
 		return e
 	case "CategoryNameChanged":
-		var e events.CategoryNameChanged
-		json.Unmarshal(rawData, &e)
+		var e events2.CategoryNameChanged
+		json.Unmarshal(event.Data, &e)
 		return e
 	case "SubCategoryAddedToCategory":
-		var e events.SubCategoryAddedToCategory
-		json.Unmarshal(rawData, &e)
+		var e events2.SubCategoryAddedToCategory
+		json.Unmarshal(event.Data, &e)
 		return e
 	default:
 		return nil
 	}
+}
+
+func (category *Category) ApplyEvent(event eventutils2.IEvent) {
+	eventType := utils.GetType(event)
+	switch eventType {
+	case "CategoryCreated":
+		applyCategoryCreated(category, event.(events2.CategoryCreated))
+	case "CategoryNameChanged":
+		applyCategoryNameChanged(category, event.(events2.CategoryNameChanged))
+	case "SubCategoryAddedToCategory":
+		applySubCategoryAddedToCategory(category, event.(events2.SubCategoryAddedToCategory))
+	}
+}
+
+func applyCategoryCreated(category *Category, event events2.CategoryCreated) {
+	category.ID = event.EntityID
+	category.State.Name = event.Name
+}
+
+func applyCategoryNameChanged(category *Category, event events2.CategoryNameChanged) {
+	category.State.Name = event.NewName
+}
+
+func applySubCategoryAddedToCategory(category *Category, event events2.SubCategoryAddedToCategory) {
+	category.State.SubCategoriesIDs = append(category.State.SubCategoriesIDs, event.SubCategoryID)
 }
