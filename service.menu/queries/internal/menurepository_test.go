@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"sort"
 	"testing"
 
 	"github.com/Resta-Inc/resta/pkg/utils"
@@ -224,6 +225,10 @@ func TestGetCategoriesByIDs(t *testing.T) {
 
 	// Act
 	categories, err := viewRepository.GetCategoriesByIDs([]uuid.UUID{categoryID1, categoryID2})
+
+	sort.Slice(categories, func(i, j int) bool {
+		return categories[i].CreatedAt.Before(categories[j].CreatedAt)
+	})
 
 	// Assert
 	require.NoError(t, err)
