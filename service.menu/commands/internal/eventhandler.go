@@ -3,7 +3,7 @@ package internal
 import (
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
-	"github.com/Resta-Inc/resta/pkg/events2"
+	"github.com/Resta-Inc/resta/pkg/events"
 	"github.com/Resta-Inc/resta/pkg/eventutils2"
 )
 
@@ -19,7 +19,7 @@ func NewMenuEventHandler(repo eventutils2.IEntityRepository) MenuEventHandler {
 
 func (eventHandler MenuEventHandler) HandleCategoryCreated(rawEvent *esdb.SubscriptionEvent) error {
 	event := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
-	categoryCreatedEvent := entities.Category{}.DeserializeEvent(event).(events2.CategoryCreated)
+	categoryCreatedEvent := entities.Category{}.DeserializeEvent(event).(events.CategoryCreated)
 	menu, err := eventHandler.entityRepository.GetEntity(&entities.Menu{}, categoryCreatedEvent.ParentMenuID)
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func (eventHandler MenuEventHandler) HandleCategoryCreated(rawEvent *esdb.Subscr
 
 func (eventHandler MenuEventHandler) HandleSubCategoryCreated(rawEvent *esdb.SubscriptionEvent) error {
 	event := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
-	subCategoryCreatedEvent := entities.SubCategory{}.DeserializeEvent(event).(events2.SubCategoryCreated)
+	subCategoryCreatedEvent := entities.SubCategory{}.DeserializeEvent(event).(events.SubCategoryCreated)
 	category, err := eventHandler.entityRepository.GetEntity(&entities.Category{}, subCategoryCreatedEvent.ParentCategoryID)
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func (eventHandler MenuEventHandler) HandleSubCategoryCreated(rawEvent *esdb.Sub
 
 func (eventHandler MenuEventHandler) HandleMenuItemCreated(rawEvent *esdb.SubscriptionEvent) error {
 	event := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
-	menuItemCreatedEvent := entities.MenuItem{}.DeserializeEvent(event).(events2.MenuItemCreated)
+	menuItemCreatedEvent := entities.MenuItem{}.DeserializeEvent(event).(events.MenuItemCreated)
 	subCategory, err := eventHandler.entityRepository.GetEntity(&entities.SubCategory{}, menuItemCreatedEvent.ParentSubCategoryID)
 	if err != nil {
 		return err

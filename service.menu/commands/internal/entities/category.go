@@ -3,7 +3,7 @@ package entities
 import (
 	"encoding/json"
 
-	"github.com/Resta-Inc/resta/pkg/events2"
+	"github.com/Resta-Inc/resta/pkg/events"
 	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
@@ -23,7 +23,7 @@ type CategoryState struct {
 func NewCategory(menuID uuid.UUID) *Category {
 	categoryID := utils.GenerateNewUUID()
 
-	event := events2.CategoryCreated{
+	event := events.CategoryCreated{
 		EventInfo:    eventutils2.NewEventInfo(categoryID),
 		Name:         resources.DefaultCategoryName("en"),
 		ParentMenuID: menuID,
@@ -44,7 +44,7 @@ func (category Category) GetSubCategoriesIDs() []uuid.UUID {
 }
 
 func (category *Category) ChangeName(newName string) {
-	event := events2.CategoryNameChanged{
+	event := events.CategoryNameChanged{
 		EventInfo: eventutils2.NewEventInfo(category.ID),
 		NewName:   newName,
 	}
@@ -52,7 +52,7 @@ func (category *Category) ChangeName(newName string) {
 }
 
 func (category *Category) AddSubCategory(categoryID uuid.UUID) {
-	event := events2.SubCategoryAddedToCategory{
+	event := events.SubCategoryAddedToCategory{
 		EventInfo:     eventutils2.NewEventInfo(category.GetID()),
 		SubCategoryID: categoryID,
 	}
@@ -67,15 +67,15 @@ func (category *Category) AppendEvent(event eventutils2.IEvent) {
 func (category Category) DeserializeEvent(event eventutils2.Event) eventutils2.IEvent {
 	switch event.Name {
 	case "CategoryCreated":
-		var e events2.CategoryCreated
+		var e events.CategoryCreated
 		json.Unmarshal(event.Data, &e)
 		return e
 	case "CategoryNameChanged":
-		var e events2.CategoryNameChanged
+		var e events.CategoryNameChanged
 		json.Unmarshal(event.Data, &e)
 		return e
 	case "SubCategoryAddedToCategory":
-		var e events2.SubCategoryAddedToCategory
+		var e events.SubCategoryAddedToCategory
 		json.Unmarshal(event.Data, &e)
 		return e
 	default:
@@ -87,23 +87,23 @@ func (category *Category) ApplyEvent(event eventutils2.IEvent) {
 	eventType := utils.GetType(event)
 	switch eventType {
 	case "CategoryCreated":
-		applyCategoryCreated(category, event.(events2.CategoryCreated))
+		applyCategoryCreated(category, event.(events.CategoryCreated))
 	case "CategoryNameChanged":
-		applyCategoryNameChanged(category, event.(events2.CategoryNameChanged))
+		applyCategoryNameChanged(category, event.(events.CategoryNameChanged))
 	case "SubCategoryAddedToCategory":
-		applySubCategoryAddedToCategory(category, event.(events2.SubCategoryAddedToCategory))
+		applySubCategoryAddedToCategory(category, event.(events.SubCategoryAddedToCategory))
 	}
 }
 
-func applyCategoryCreated(category *Category, event events2.CategoryCreated) {
+func applyCategoryCreated(category *Category, event events.CategoryCreated) {
 	category.ID = event.EntityID
 	category.State.Name = event.Name
 }
 
-func applyCategoryNameChanged(category *Category, event events2.CategoryNameChanged) {
+func applyCategoryNameChanged(category *Category, event events.CategoryNameChanged) {
 	category.State.Name = event.NewName
 }
 
-func applySubCategoryAddedToCategory(category *Category, event events2.SubCategoryAddedToCategory) {
+func applySubCategoryAddedToCategory(category *Category, event events.SubCategoryAddedToCategory) {
 	category.State.SubCategoriesIDs = append(category.State.SubCategoriesIDs, event.SubCategoryID)
 }

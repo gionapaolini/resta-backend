@@ -3,7 +3,7 @@ package entities
 import (
 	"encoding/json"
 
-	"github.com/Resta-Inc/resta/pkg/events2"
+	"github.com/Resta-Inc/resta/pkg/events"
 	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
@@ -26,7 +26,7 @@ type MenuState struct {
 func NewMenu() *Menu {
 	menuID := utils.GenerateNewUUID()
 
-	event := events2.MenuCreated{
+	event := events.MenuCreated{
 		EventInfo: eventutils2.NewEventInfo(menuID),
 		Name:      resources.DefaultMenuName("en"),
 	}
@@ -50,21 +50,21 @@ func (menu Menu) GetCategoriesIDs() []uuid.UUID {
 }
 
 func (menu *Menu) Enable() {
-	event := events2.MenuEnabled{
+	event := events.MenuEnabled{
 		EventInfo: eventutils2.NewEventInfo(menu.ID),
 	}
 	eventutils2.AddEvent(event, menu)
 }
 
 func (menu *Menu) Disable() {
-	event := events2.MenuDisabled{
+	event := events.MenuDisabled{
 		EventInfo: eventutils2.NewEventInfo(menu.ID),
 	}
 	eventutils2.AddEvent(event, menu)
 }
 
 func (menu *Menu) ChangeName(newName string) {
-	event := events2.MenuNameChanged{
+	event := events.MenuNameChanged{
 		EventInfo: eventutils2.NewEventInfo(menu.ID),
 		NewName:   newName,
 	}
@@ -72,7 +72,7 @@ func (menu *Menu) ChangeName(newName string) {
 }
 
 func (menu *Menu) AddCategory(categoryID uuid.UUID) {
-	event := events2.CategoryAddedToMenu{
+	event := events.CategoryAddedToMenu{
 		EventInfo:  eventutils2.NewEventInfo(menu.ID),
 		CategoryID: categoryID,
 	}
@@ -88,23 +88,23 @@ func (menu *Menu) AppendEvent(event eventutils2.IEvent) {
 func (menu Menu) DeserializeEvent(event eventutils2.Event) eventutils2.IEvent {
 	switch event.Name {
 	case "MenuCreated":
-		var e events2.MenuCreated
+		var e events.MenuCreated
 		json.Unmarshal(event.Data, &e)
 		return e
 	case "MenuEnabled":
-		var e events2.MenuEnabled
+		var e events.MenuEnabled
 		json.Unmarshal(event.Data, &e)
 		return e
 	case "MenuDisabled":
-		var e events2.MenuDisabled
+		var e events.MenuDisabled
 		json.Unmarshal(event.Data, &e)
 		return e
 	case "MenuNameChanged":
-		var e events2.MenuNameChanged
+		var e events.MenuNameChanged
 		json.Unmarshal(event.Data, &e)
 		return e
 	case "CategoryAddedToMenu":
-		var e events2.CategoryAddedToMenu
+		var e events.CategoryAddedToMenu
 		json.Unmarshal(event.Data, &e)
 		return e
 	}
@@ -115,19 +115,19 @@ func (menu *Menu) ApplyEvent(event eventutils2.IEvent) {
 	eventType := utils.GetType(event)
 	switch eventType {
 	case "MenuCreated":
-		applyMenuCreated(menu, event.(events2.MenuCreated))
+		applyMenuCreated(menu, event.(events.MenuCreated))
 	case "MenuEnabled":
 		applyMenuEnabled(menu)
 	case "MenuDisabled":
 		applyMenuDisabled(menu)
 	case "MenuNameChanged":
-		applyMenuNameChanged(menu, event.(events2.MenuNameChanged))
+		applyMenuNameChanged(menu, event.(events.MenuNameChanged))
 	case "CategoryAddedToMenu":
-		applyCategoryAddedToMenu(menu, event.(events2.CategoryAddedToMenu))
+		applyCategoryAddedToMenu(menu, event.(events.CategoryAddedToMenu))
 	}
 }
 
-func applyMenuCreated(menu *Menu, e events2.MenuCreated) {
+func applyMenuCreated(menu *Menu, e events.MenuCreated) {
 	menu.State.Name = e.Name
 	menu.ID = e.EntityID
 }
@@ -140,10 +140,10 @@ func applyMenuDisabled(menu *Menu) {
 	menu.State.IsEnabled = false
 }
 
-func applyMenuNameChanged(menu *Menu, event events2.MenuNameChanged) {
+func applyMenuNameChanged(menu *Menu, event events.MenuNameChanged) {
 	menu.State.Name = event.NewName
 }
 
-func applyCategoryAddedToMenu(menu *Menu, event events2.CategoryAddedToMenu) {
+func applyCategoryAddedToMenu(menu *Menu, event events.CategoryAddedToMenu) {
 	menu.State.CategoriesIDs = append(menu.State.CategoriesIDs, event.CategoryID)
 }

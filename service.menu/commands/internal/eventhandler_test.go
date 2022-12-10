@@ -5,7 +5,7 @@ import (
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/Resta-Inc/resta/menu/commands/internal/entities"
-	"github.com/Resta-Inc/resta/pkg/events2"
+	"github.com/Resta-Inc/resta/pkg/events"
 	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/Resta-Inc/resta/pkg/utils"
 	"github.com/stretchr/testify/mock"
@@ -17,7 +17,7 @@ func TestHandleCategoryCreatedMessage(t *testing.T) {
 	categoryID := utils.GenerateNewUUID()
 	menu := entities.NewMenu()
 
-	categoryCreatedEvent := events2.CategoryCreated{
+	categoryCreatedEvent := events.CategoryCreated{
 		EventInfo:    eventutils2.NewEventInfo(categoryID),
 		Name:         "TestCategoryName",
 		ParentMenuID: menu.ID,
@@ -64,7 +64,7 @@ func TestHandleSubCategoryCreatedMessage(t *testing.T) {
 	subCategoryID := utils.GenerateNewUUID()
 	category := entities.NewCategory(utils.GenerateNewUUID())
 
-	subCategoryCreatedEvent := events2.SubCategoryCreated{
+	subCategoryCreatedEvent := events.SubCategoryCreated{
 		EventInfo:        eventutils2.NewEventInfo(subCategoryID),
 		Name:             "TestCategoryName",
 		ParentCategoryID: category.ID,
@@ -111,7 +111,7 @@ func TestHandleMenuItemCreatedMessage(t *testing.T) {
 	menuItemID := utils.GenerateNewUUID()
 	subCategory := entities.NewSubCategory(utils.GenerateNewUUID())
 
-	menuItemCreatedEvent := events2.MenuItemCreated{
+	menuItemCreatedEvent := events.MenuItemCreated{
 		EventInfo:           eventutils2.NewEventInfo(menuItemID),
 		Name:                "TestMenuItemName",
 		ParentSubCategoryID: subCategory.ID,

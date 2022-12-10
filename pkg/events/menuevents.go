@@ -1,29 +1,29 @@
 package events
 
 import (
-	"github.com/Resta-Inc/resta/pkg/eventutils"
+	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/gofrs/uuid"
 )
 
 type MenuCreated struct {
-	eventutils.EntityEventInfo
+	eventutils2.EventInfo
 	Name string
 }
 
 type MenuEnabled struct {
-	eventutils.EntityEventInfo
+	eventutils2.EventInfo
 }
 
 type MenuDisabled struct {
-	eventutils.EntityEventInfo
+	eventutils2.EventInfo
 }
 
 type MenuNameChanged struct {
-	eventutils.EntityEventInfo
+	eventutils2.EventInfo
 	NewName string
 }
 
 type CategoryAddedToMenu struct {
-	eventutils.EntityEventInfo
+	eventutils2.EventInfo
 	CategoryID uuid.UUID
 }

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"github.com/Resta-Inc/resta/pkg/events2"
+	"github.com/Resta-Inc/resta/pkg/events"
 	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/Resta-Inc/resta/pkg/utils"
 )
@@ -13,7 +13,7 @@ func TestHandleMenuCreatedMessage(t *testing.T) {
 	// Arrange
 	menuID := utils.GenerateNewUUID()
 
-	menuCreatedEvent := events2.MenuCreated{
+	menuCreatedEvent := events.MenuCreated{
 		EventInfo: eventutils2.NewEventInfo(menuID),
 		Name:      "TestMenuName",
 	}
@@ -50,7 +50,7 @@ func TestHandleMenuEnabledMessage(t *testing.T) {
 	// Arrange
 	menuID := utils.GenerateNewUUID()
 
-	menuEnabledEvent := events2.MenuEnabled{
+	menuEnabledEvent := events.MenuEnabled{
 		EventInfo: eventutils2.NewEventInfo(menuID),
 	}
 
@@ -86,7 +86,7 @@ func TestHandleMenuDisabledMessage(t *testing.T) {
 	// Arrange
 	menuID := utils.GenerateNewUUID()
 
-	menuEnabledEvent := events2.MenuDisabled{
+	menuEnabledEvent := events.MenuDisabled{
 		EventInfo: eventutils2.NewEventInfo(menuID),
 	}
 
@@ -122,7 +122,7 @@ func TestHandleMenuNameChangedMessage(t *testing.T) {
 	// Arrange
 	menuID := utils.GenerateNewUUID()
 
-	menuEnabledEvent := events2.MenuNameChanged{
+	menuEnabledEvent := events.MenuNameChanged{
 		EventInfo: eventutils2.NewEventInfo(menuID),
 		NewName:   "NewMenuName",
 	}
@@ -159,7 +159,7 @@ func TestHandleCategoryCreatedMessage(t *testing.T) {
 	// Arrange
 	menuID, categoryID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
 
-	categoryCreatedEvent := events2.CategoryCreated{
+	categoryCreatedEvent := events.CategoryCreated{
 		EventInfo:    eventutils2.NewEventInfo(categoryID),
 		Name:         "TestCategoryName",
 		ParentMenuID: menuID,
@@ -199,7 +199,7 @@ func TestHandleCategoryAddedToMenuMessage(t *testing.T) {
 	// Arrange
 	menuID, categoryID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
 
-	categoryAddedToMenuEvent := events2.CategoryAddedToMenu{
+	categoryAddedToMenuEvent := events.CategoryAddedToMenu{
 		EventInfo:  eventutils2.NewEventInfo(menuID),
 		CategoryID: categoryID,
 	}
@@ -236,7 +236,7 @@ func TestHandleCategoryNameChangedMessage(t *testing.T) {
 	// Arrange
 	categoryID := utils.GenerateNewUUID()
 
-	menuEnabledEvent := events2.CategoryNameChanged{
+	menuEnabledEvent := events.CategoryNameChanged{
 		EventInfo: eventutils2.NewEventInfo(categoryID),
 		NewName:   "NewMenuName",
 	}
@@ -272,7 +272,7 @@ func TestHandleSubCategoryCreatedMessage(t *testing.T) {
 	// Arrange
 	categoryID, subCategoryID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
 
-	subCategoryCreatedEvent := events2.SubCategoryCreated{
+	subCategoryCreatedEvent := events.SubCategoryCreated{
 		EventInfo:        eventutils2.NewEventInfo(subCategoryID),
 		Name:             "TestSubCategoryName",
 		ParentCategoryID: categoryID,
@@ -312,7 +312,7 @@ func TestHandleSubCategoryAddetToCategory(t *testing.T) {
 	// Arrange
 	categoryID, subCategoryID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
 
-	subCategoryAddedToCategoryEvent := events2.SubCategoryAddedToCategory{
+	subCategoryAddedToCategoryEvent := events.SubCategoryAddedToCategory{
 		EventInfo:     eventutils2.NewEventInfo(categoryID),
 		SubCategoryID: subCategoryID,
 	}
@@ -351,7 +351,7 @@ func TestHandleMenuItemCreatedMessage(t *testing.T) {
 	// Arrange
 	subCategoryID, menuItemID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
 
-	subCategoryCreatedEvent := events2.MenuItemCreated{
+	subCategoryCreatedEvent := events.MenuItemCreated{
 		EventInfo:           eventutils2.NewEventInfo(menuItemID),
 		Name:                "TestMenuItemName",
 		ParentSubCategoryID: subCategoryID,
@@ -391,7 +391,7 @@ func TestHandleMenuItemAddetToCategory(t *testing.T) {
 	// Arrange
 	subCategoryID, menuItemID := utils.GenerateNewUUID(), utils.GenerateNewUUID()
 
-	subCategoryAddedToCategoryEvent := events2.MenuItemAddedToSubCategory{
+	subCategoryAddedToCategoryEvent := events.MenuItemAddedToSubCategory{
 		EventInfo:  eventutils2.NewEventInfo(subCategoryID),
 		MenuItemID: menuItemID,
 	}

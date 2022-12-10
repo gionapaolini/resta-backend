@@ -1,22 +1,22 @@
 package events
 
 import (
-	"github.com/Resta-Inc/resta/pkg/eventutils"
+	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/gofrs/uuid"
 )
 
 type SubCategoryCreated struct {
-	eventutils.EntityEventInfo
+	eventutils2.EventInfo
 	Name             string
 	ParentCategoryID uuid.UUID
 }
 
 type SubCategoryNameChanged struct {
-	eventutils.EntityEventInfo
+	eventutils2.EventInfo
 	NewName string
 }
 
 type MenuItemAddedToSubCategory struct {
-	eventutils.EntityEventInfo
+	eventutils2.EventInfo
 	MenuItemID uuid.UUID
 }

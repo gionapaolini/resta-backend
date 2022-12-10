@@ -3,7 +3,7 @@ package entities
 import (
 	"encoding/json"
 
-	"github.com/Resta-Inc/resta/pkg/events2"
+	"github.com/Resta-Inc/resta/pkg/events"
 	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
@@ -23,7 +23,7 @@ type SubCategoryState struct {
 func NewSubCategory(categoryID uuid.UUID) *SubCategory {
 	subCategoryID := utils.GenerateNewUUID()
 
-	event := events2.SubCategoryCreated{
+	event := events.SubCategoryCreated{
 		EventInfo:        eventutils2.NewEventInfo(subCategoryID),
 		Name:             resources.DefaultSubCategoryName("en"),
 		ParentCategoryID: categoryID,
@@ -44,7 +44,7 @@ func (subCategory SubCategory) GetMenuItemsIDs() []uuid.UUID {
 }
 
 func (subCategory *SubCategory) ChangeName(newName string) {
-	event := events2.SubCategoryNameChanged{
+	event := events.SubCategoryNameChanged{
 		EventInfo: eventutils2.NewEventInfo(subCategory.ID),
 		NewName:   newName,
 	}
@@ -52,7 +52,7 @@ func (subCategory *SubCategory) ChangeName(newName string) {
 }
 
 func (subCategory *SubCategory) AddMenuItem(menuItemID uuid.UUID) {
-	event := events2.MenuItemAddedToSubCategory{
+	event := events.MenuItemAddedToSubCategory{
 		EventInfo:  eventutils2.NewEventInfo(subCategory.ID),
 		MenuItemID: menuItemID,
 	}
@@ -68,15 +68,15 @@ func (subCategory *SubCategory) AppendEvent(event eventutils2.IEvent) {
 func (subCategory SubCategory) DeserializeEvent(event eventutils2.Event) eventutils2.IEvent {
 	switch event.Name {
 	case "SubCategoryCreated":
-		var e events2.SubCategoryCreated
+		var e events.SubCategoryCreated
 		json.Unmarshal(event.Data, &e)
 		return e
 	case "SubCategoryNameChanged":
-		var e events2.SubCategoryNameChanged
+		var e events.SubCategoryNameChanged
 		json.Unmarshal(event.Data, &e)
 		return e
 	case "MenuItemAddedToSubCategory":
-		var e events2.MenuItemAddedToSubCategory
+		var e events.MenuItemAddedToSubCategory
 		json.Unmarshal(event.Data, &e)
 		return e
 	default:
@@ -88,23 +88,23 @@ func (subCategory *SubCategory) ApplyEvent(event eventutils2.IEvent) {
 	eventType := utils.GetType(event)
 	switch eventType {
 	case "SubCategoryCreated":
-		applySubCategoryCreated(subCategory, event.(events2.SubCategoryCreated))
+		applySubCategoryCreated(subCategory, event.(events.SubCategoryCreated))
 	case "SubCategoryNameChanged":
-		applySubCategoryNameChanged(subCategory, event.(events2.SubCategoryNameChanged))
+		applySubCategoryNameChanged(subCategory, event.(events.SubCategoryNameChanged))
 	case "MenuItemAddedToSubCategory":
-		applyMenuItemAddedToSubCategory(subCategory, event.(events2.MenuItemAddedToSubCategory))
+		applyMenuItemAddedToSubCategory(subCategory, event.(events.MenuItemAddedToSubCategory))
 	}
 }
 
-func applySubCategoryCreated(subCategory *SubCategory, event events2.SubCategoryCreated) {
+func applySubCategoryCreated(subCategory *SubCategory, event events.SubCategoryCreated) {
 	subCategory.ID = event.EntityID
 	subCategory.State.Name = event.Name
 }
 
-func applySubCategoryNameChanged(subCategory *SubCategory, event events2.SubCategoryNameChanged) {
+func applySubCategoryNameChanged(subCategory *SubCategory, event events.SubCategoryNameChanged) {
 	subCategory.State.Name = event.NewName
 }
 
-func applyMenuItemAddedToSubCategory(subCategory *SubCategory, event events2.MenuItemAddedToSubCategory) {
+func applyMenuItemAddedToSubCategory(subCategory *SubCategory, event events.MenuItemAddedToSubCategory) {
 	subCategory.State.MenuItemsIDs = append(subCategory.State.MenuItemsIDs, event.MenuItemID)
 }

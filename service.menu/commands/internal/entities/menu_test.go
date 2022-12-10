@@ -3,7 +3,7 @@ package entities
 import (
 	"testing"
 
-	"github.com/Resta-Inc/resta/pkg/events2"
+	"github.com/Resta-Inc/resta/pkg/events"
 	"github.com/Resta-Inc/resta/pkg/eventutils2"
 	"github.com/Resta-Inc/resta/pkg/resources"
 	"github.com/Resta-Inc/resta/pkg/utils"
@@ -19,7 +19,7 @@ func Test_CreateMenu(t *testing.T) {
 	require.True(t, menu.IsNew())
 	require.Equal(t, resources.DefaultMenuName("en"), menu.GetName())
 	require.Len(t, menu.Events, 1)
-	require.IsType(t, events2.MenuCreated{}, latestEvent)
+	require.IsType(t, events.MenuCreated{}, latestEvent)
 	require.Equal(t, utils.Time.Now(), latestEvent.GetTimeStamp())
 	require.Equal(t, menu.ID, latestEvent.GetEntityID())
 	require.False(t, menu.IsDeleted)
@@ -35,7 +35,7 @@ func Test_EnableMenu(t *testing.T) {
 	// Assert
 	latestEvent := menu.Events[len(menu.Events)-1]
 	require.True(t, menu.IsEnabled())
-	require.IsType(t, events2.MenuEnabled{}, latestEvent)
+	require.IsType(t, events.MenuEnabled{}, latestEvent)
 }
 
 func Test_DisableMenu(t *testing.T) {
@@ -49,7 +49,7 @@ func Test_DisableMenu(t *testing.T) {
 	// Assert
 	latestEvent := menu.Events[len(menu.Events)-1]
 	require.False(t, menu.IsEnabled())
-	require.IsType(t, events2.MenuDisabled{}, latestEvent)
+	require.IsType(t, events.MenuDisabled{}, latestEvent)
 }
 
 func Test_ChangeMenuName(t *testing.T) {
@@ -63,7 +63,7 @@ func Test_ChangeMenuName(t *testing.T) {
 	// Assert
 	latestEvent := menu.Events[len(menu.Events)-1]
 	require.Equal(t, newName, menu.GetName())
-	require.IsType(t, events2.MenuNameChanged{}, latestEvent)
+	require.IsType(t, events.MenuNameChanged{}, latestEvent)
 }
 
 func Test_AddCategory(t *testing.T) {
@@ -77,25 +77,25 @@ func Test_AddCategory(t *testing.T) {
 	// Assert
 	latestEvent := menu.Events[len(menu.Events)-1]
 	require.Contains(t, menu.GetCategoriesIDs(), categoryID)
-	require.IsType(t, events2.CategoryAddedToMenu{}, latestEvent)
+	require.IsType(t, events.CategoryAddedToMenu{}, latestEvent)
 }
 
 func Test_DeserializeMenuEvent(t *testing.T) {
 	// Arrange
 	events := []eventutils2.IEvent{
-		events2.MenuCreated{
+		events.MenuCreated{
 			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
 		},
-		events2.MenuEnabled{
+		events.MenuEnabled{
 			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
 		},
-		events2.MenuDisabled{
+		events.MenuDisabled{
 			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
 		},
-		events2.MenuNameChanged{
+		events.MenuNameChanged{
 			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
 		},
-		events2.CategoryAddedToMenu{
+		events.CategoryAddedToMenu{
 			EventInfo: eventutils2.NewEventInfo(utils.GenerateNewUUID()),
 		},
 	}
