@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"github.com/Resta-Inc/resta/pkg/events"
-	"github.com/Resta-Inc/resta/pkg/eventutils"
+	"github.com/Resta-Inc/resta/pkg/events2"
+	"github.com/Resta-Inc/resta/pkg/eventutils2"
 )
 
 type MenuEventHandler struct {
@@ -19,9 +19,9 @@ func NewMenuEventHandler(repo IMenuRepository) MenuEventHandler {
 }
 
 func (menuEventHandler MenuEventHandler) HandleMenuCreated(rawEvent *esdb.SubscriptionEvent) error {
-	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
-	var event events.MenuCreated
-	err := json.Unmarshal(rawData, &event)
+	recordedEvent := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
+	var event events2.MenuCreated
+	err := json.Unmarshal(recordedEvent.Data, &event)
 	if err != nil {
 		return err
 	}
@@ -30,9 +30,9 @@ func (menuEventHandler MenuEventHandler) HandleMenuCreated(rawEvent *esdb.Subscr
 }
 
 func (menuEventHandler MenuEventHandler) HandleMenuEnabled(rawEvent *esdb.SubscriptionEvent) error {
-	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
-	var event events.MenuEnabled
-	err := json.Unmarshal(rawData, &event)
+	recordedEvent := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
+	var event events2.MenuEnabled
+	err := json.Unmarshal(recordedEvent.Data, &event)
 	if err != nil {
 		return err
 	}
@@ -41,9 +41,9 @@ func (menuEventHandler MenuEventHandler) HandleMenuEnabled(rawEvent *esdb.Subscr
 }
 
 func (menuEventHandler MenuEventHandler) HandleMenuDisabled(rawEvent *esdb.SubscriptionEvent) error {
-	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
-	var event events.MenuDisabled
-	err := json.Unmarshal(rawData, &event)
+	recordedEvent := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
+	var event events2.MenuDisabled
+	err := json.Unmarshal(recordedEvent.Data, &event)
 	if err != nil {
 		return err
 	}
@@ -52,9 +52,9 @@ func (menuEventHandler MenuEventHandler) HandleMenuDisabled(rawEvent *esdb.Subsc
 }
 
 func (menuEventHandler MenuEventHandler) HandleMenuNameChanged(rawEvent *esdb.SubscriptionEvent) error {
-	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
-	var event events.MenuNameChanged
-	err := json.Unmarshal(rawData, &event)
+	recordedEvent := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
+	var event events2.MenuNameChanged
+	err := json.Unmarshal(recordedEvent.Data, &event)
 	if err != nil {
 		return err
 	}
@@ -63,9 +63,9 @@ func (menuEventHandler MenuEventHandler) HandleMenuNameChanged(rawEvent *esdb.Su
 }
 
 func (menuEventHandler MenuEventHandler) HandleCategoryCreated(rawEvent *esdb.SubscriptionEvent) error {
-	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
-	var event events.CategoryCreated
-	err := json.Unmarshal(rawData, &event)
+	recordedEvent := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
+	var event events2.CategoryCreated
+	err := json.Unmarshal(recordedEvent.Data, &event)
 	if err != nil {
 		return err
 	}
@@ -74,9 +74,9 @@ func (menuEventHandler MenuEventHandler) HandleCategoryCreated(rawEvent *esdb.Su
 }
 
 func (menuEventHandler MenuEventHandler) HandleCategoryAddedToMenu(rawEvent *esdb.SubscriptionEvent) error {
-	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
-	var event events.CategoryAddedToMenu
-	err := json.Unmarshal(rawData, &event)
+	recordedEvent := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
+	var event events2.CategoryAddedToMenu
+	err := json.Unmarshal(recordedEvent.Data, &event)
 	if err != nil {
 		return err
 	}
@@ -85,9 +85,9 @@ func (menuEventHandler MenuEventHandler) HandleCategoryAddedToMenu(rawEvent *esd
 }
 
 func (menuEventHandler MenuEventHandler) HandleCategoryNameChanged(rawEvent *esdb.SubscriptionEvent) error {
-	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
-	var event events.CategoryNameChanged
-	err := json.Unmarshal(rawData, &event)
+	recordedEvent := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
+	var event events2.CategoryNameChanged
+	err := json.Unmarshal(recordedEvent.Data, &event)
 	if err != nil {
 		return err
 	}
@@ -96,9 +96,9 @@ func (menuEventHandler MenuEventHandler) HandleCategoryNameChanged(rawEvent *esd
 }
 
 func (menuEventHandler MenuEventHandler) HandleSubCategoryCreated(rawEvent *esdb.SubscriptionEvent) error {
-	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
-	var event events.SubCategoryCreated
-	err := json.Unmarshal(rawData, &event)
+	recordedEvent := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
+	var event events2.SubCategoryCreated
+	err := json.Unmarshal(recordedEvent.Data, &event)
 	if err != nil {
 		return err
 	}
@@ -107,9 +107,9 @@ func (menuEventHandler MenuEventHandler) HandleSubCategoryCreated(rawEvent *esdb
 }
 
 func (menuEventHandler MenuEventHandler) HandleSubCategoryAddedToCategory(rawEvent *esdb.SubscriptionEvent) error {
-	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
-	var event events.SubCategoryAddedToCategory
-	err := json.Unmarshal(rawData, &event)
+	recordedEvent := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
+	var event events2.SubCategoryAddedToCategory
+	err := json.Unmarshal(recordedEvent.Data, &event)
 	if err != nil {
 		return err
 	}
@@ -118,9 +118,9 @@ func (menuEventHandler MenuEventHandler) HandleSubCategoryAddedToCategory(rawEve
 }
 
 func (menuEventHandler MenuEventHandler) HandleMenuItemCreated(rawEvent *esdb.SubscriptionEvent) error {
-	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
-	var event events.MenuItemCreated
-	err := json.Unmarshal(rawData, &event)
+	recordedEvent := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
+	var event events2.MenuItemCreated
+	err := json.Unmarshal(recordedEvent.Data, &event)
 	if err != nil {
 		return err
 	}
@@ -129,9 +129,9 @@ func (menuEventHandler MenuEventHandler) HandleMenuItemCreated(rawEvent *esdb.Su
 }
 
 func (menuEventHandler MenuEventHandler) HandleMenuItemAddedToSubCategory(rawEvent *esdb.SubscriptionEvent) error {
-	_, rawData := eventutils.GetRawDataFromSerializedEvent(rawEvent.EventAppeared.Event.Data)
-	var event events.MenuItemAddedToSubCategory
-	err := json.Unmarshal(rawData, &event)
+	recordedEvent := eventutils2.DeserializeRecordedEvent(rawEvent.EventAppeared.Event)
+	var event events2.MenuItemAddedToSubCategory
+	err := json.Unmarshal(recordedEvent.Data, &event)
 	if err != nil {
 		return err
 	}
