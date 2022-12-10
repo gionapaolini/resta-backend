@@ -153,8 +153,10 @@ func TestGetCategoriesByIDsApi_ShouldHaveImageURL(t *testing.T) {
 	app := fiber.New()
 
 	err := os.MkdirAll("./resources/images/categories", 0755)
-	os.OpenFile(fmt.Sprintf("./resources/images/categories/%s.jpg", categories[0].ID), os.O_RDONLY|os.O_CREATE, 0666)
-	os.OpenFile(fmt.Sprintf("./resources/images/categories/%s.jpg", categories[1].ID), os.O_RDONLY|os.O_CREATE, 0666)
+	f1, err := os.OpenFile(fmt.Sprintf("./resources/images/categories/%s.jpg", categories[0].ID), os.O_RDONLY|os.O_CREATE, 0666)
+	f1.Close()
+	f2, err := os.OpenFile(fmt.Sprintf("./resources/images/categories/%s.jpg", categories[1].ID), os.O_RDONLY|os.O_CREATE, 0666)
+	f2.Close()
 	defer os.RemoveAll("./resources")
 
 	SetupApi(app, mockMenuRepository, "./resources", "http://localhost:10001")
