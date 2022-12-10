@@ -76,6 +76,7 @@ func (repo MenuRepository) GetMenu(menuID uuid.UUID) (MenuView, error) {
 		&menuView.ID,
 		&menuView.Name,
 		&menuView.IsEnabled,
+		&menuView.CreatedAt,
 		&categoriesIDs,
 	)
 	menuView.CategoriesIDs = convertUint8ToUUIDSlice(categoriesIDs)
@@ -110,6 +111,7 @@ func (repo MenuRepository) GetAllMenus() ([]MenuView, error) {
 			&menuView.ID,
 			&menuView.Name,
 			&menuView.IsEnabled,
+			&menuView.CreatedAt,
 			&categoriesIDs,
 		)
 		menuView.CategoriesIDs = convertUint8ToUUIDSlice(categoriesIDs)
@@ -233,6 +235,7 @@ func (repo MenuRepository) GetCategory(categoryID uuid.UUID) (CategoryView, erro
 	err = row.Scan(
 		&categoryView.ID,
 		&categoryView.Name,
+		&categoryView.CreatedAt,
 		&subCategoriesIDs,
 	)
 
@@ -302,6 +305,7 @@ func (repo MenuRepository) GetCategoriesByIDs(categoriesIDs []uuid.UUID) ([]Cate
 		err = rows.Scan(
 			&categoryView.ID,
 			&categoryView.Name,
+			&categoryView.CreatedAt,
 			&subCategoriesIDs,
 		)
 
@@ -382,6 +386,7 @@ func (repo MenuRepository) GetSubCategory(subCategoryID uuid.UUID) (SubCategoryV
 	err = row.Scan(
 		&subCategoryView.ID,
 		&subCategoryView.Name,
+		&subCategoryView.CreatedAt,
 		&menuItemsIDs,
 	)
 
@@ -421,6 +426,7 @@ func (repo MenuRepository) GetSubCategoriesByIDs(subCategoriesIDs []uuid.UUID) (
 		err = rows.Scan(
 			&subCategoryView.ID,
 			&subCategoryView.Name,
+			&subCategoryView.CreatedAt,
 			&menuItemsIDs,
 		)
 
@@ -510,6 +516,7 @@ func (repo MenuRepository) GetMenuItem(menuItemID uuid.UUID) (MenuItemView, erro
 	err = row.Scan(
 		&menuItemView.ID,
 		&menuItemView.Name,
+		&menuItemView.CreatedAt,
 	)
 
 	if err != nil {
@@ -543,6 +550,7 @@ func (repo MenuRepository) GetMenuItemsByIDs(menuItemsIDs []uuid.UUID) ([]MenuIt
 		err = rows.Scan(
 			&menuItemView.ID,
 			&menuItemView.Name,
+			&menuItemView.CreatedAt,
 		)
 
 		if err != nil {

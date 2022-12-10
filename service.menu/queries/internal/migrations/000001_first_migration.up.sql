@@ -1,12 +1,14 @@
 CREATE TABLE IF NOT EXISTS menus (
    id uuid PRIMARY KEY,
    name VARCHAR (50) NOT NULL,
-   is_enabled BOOLEAN NOT NULL DEFAULT FALSE 
+   is_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+   created_at TIMESTAMP DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS categories (
    id uuid PRIMARY KEY,
-   name VARCHAR (50) NOT NULL
+   name VARCHAR (50) NOT NULL,
+   created_at TIMESTAMP DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS menus_categories (
@@ -19,7 +21,8 @@ CREATE TABLE IF NOT EXISTS menus_categories (
 
 CREATE TABLE IF NOT EXISTS subcategories (
    id uuid PRIMARY KEY,
-   name VARCHAR (50) NOT NULL
+   name VARCHAR (50) NOT NULL,
+   created_at TIMESTAMP DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS category_subcategories (
@@ -33,7 +36,8 @@ CREATE TABLE IF NOT EXISTS category_subcategories (
 
 CREATE TABLE IF NOT EXISTS menuitems (
    id uuid PRIMARY KEY,
-   name VARCHAR (50) NOT NULL
+   name VARCHAR (50) NOT NULL,
+   created_at TIMESTAMP DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS subcategory_menuitems (
