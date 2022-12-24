@@ -4,7 +4,7 @@
 
 ```
 cd dev
-sudo docker-compose up --build -d 
+docker-compose up --build -d 
 ```
 
 This will run the EventStore and the Postgres server. 
