@@ -1,13 +1,13 @@
 version: "3" 
 services:
   postgresql:
-    image: "postgres:14-alpine"
+    image: "postgres:15-alpine"
     ports: 
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: mysecretpassword
   eventstore:
-    image: "eventstore/eventstore:21.10.2-buster-slim"
+    image: "eventstore/eventstore:22.10.0-buster-slim"
     ports: 
       - "2113:2113"
       - "1113:1113"
