@@ -64,6 +64,10 @@ func (e Entity) IsNew() bool {
 	return e.New
 }
 
+func (e *Entity) AppendEvent(event IEvent) {
+	e.Events = append(e.Events, event)
+}
+
 type IReconstructible interface {
 	GetID() uuid.UUID
 	GetEvents() []IEvent

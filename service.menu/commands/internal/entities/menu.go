@@ -81,10 +81,6 @@ func (menu *Menu) AddCategory(categoryID uuid.UUID) {
 
 // Events
 
-func (menu *Menu) AppendEvent(event eventutils.IEvent) {
-	menu.Events = append(menu.Events, event)
-}
-
 func (menu Menu) DeserializeEvent(event eventutils.Event) eventutils.IEvent {
 	switch event.Name {
 	case "MenuCreated":

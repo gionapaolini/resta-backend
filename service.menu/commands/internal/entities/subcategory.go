@@ -61,10 +61,6 @@ func (subCategory *SubCategory) AddMenuItem(menuItemID uuid.UUID) {
 
 // Events
 
-func (subCategory *SubCategory) AppendEvent(event eventutils.IEvent) {
-	subCategory.Events = append(subCategory.Events, event)
-}
-
 func (subCategory SubCategory) DeserializeEvent(event eventutils.Event) eventutils.IEvent {
 	switch event.Name {
 	case "SubCategoryCreated":

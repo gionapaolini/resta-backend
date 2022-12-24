@@ -63,10 +63,6 @@ func (menuItem *MenuItem) ChangeEstimatedPreparationTime(newTime time.Duration) 
 
 // Events
 
-func (menuItem *MenuItem) AppendEvent(event eventutils.IEvent) {
-	menuItem.Events = append(menuItem.Events, event)
-}
-
 func (menuItem MenuItem) DeserializeEvent(event eventutils.Event) eventutils.IEvent {
 	switch event.Name {
 	case "MenuItemCreated":

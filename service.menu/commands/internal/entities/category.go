@@ -60,9 +60,6 @@ func (category *Category) AddSubCategory(categoryID uuid.UUID) {
 }
 
 // Events
-func (category *Category) AppendEvent(event eventutils.IEvent) {
-	category.Events = append(category.Events, event)
-}
 
 func (category Category) DeserializeEvent(event eventutils.Event) eventutils.IEvent {
 	switch event.Name {

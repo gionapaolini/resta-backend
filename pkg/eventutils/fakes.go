@@ -48,10 +48,6 @@ type TestEntityNameChanged struct {
 	NewName string
 }
 
-func (testEntity *TestEntity) AppendEvent(event IEvent) {
-	testEntity.Events = append(testEntity.Events, event)
-}
-
 func (testEntity *TestEntity) ApplyEvent(event IEvent) {
 	eventType := utils.GetType(event)
 	switch eventType {
