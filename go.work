@@ -1,0 +1,8 @@
+go 1.19
+
+use (
+	.
+	./dev
+	./service.menu/commands
+	./service.menu/queries
+)
